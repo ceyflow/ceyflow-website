@@ -1,0 +1,37 @@
+import Link from "next/link";
+import { getDocuments, getSettings } from "../../../../lib/db";
+import { Badge } from "../../../../components/admin/Badge";
+import { money, date } from "../../../../lib/format";
+
+export default function QuotesPage() {
+  const quotes = getDocuments("quote");
+  const cur = getSettings().currency || "LKR";
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold">Quotations</h1>
+        <Link href="/admin/quotes/new" className="btn-primary">New quotation</Link>
+      </div>
+      <div className="card overflow-x-auto">
+        {quotes.length === 0 ? (
+          <p className="p-8 text-center text-sm text-slate-500">No quotations yet.</p>
+        ) : (
+          <table className="table">
+            <thead><tr><th>Number</th><th>Client</th><th>Date</th><th className="text-right">Total</th><th>Status</th></tr></thead>
+            <tbody>
+              {quotes.map((q) => (
+                <tr key={q.id}>
+                  <td><Link href={`/admin/quotes/${q.id}`} className="font-medium text-brand-700 hover:underline">{q.number}</Link></td>
+                  <td>{q.client_name}</td>
+                  <td>{date(q.issue_date)}</td>
+                  <td className="text-right">{money(q.total, cur)}</td>
+                  <td><Badge value={q.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}

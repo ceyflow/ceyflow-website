@@ -1,0 +1,58 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getClient, getDocuments } from "../../../../../lib/db";
+import { ClientForm } from "../../../../../components/admin/ClientForm";
+import { Badge } from "../../../../../components/admin/Badge";
+import { money, date } from "../../../../../lib/format";
+import { deleteClient } from "../../../../../lib/actions";
+
+export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const client = getClient(Number(id));
+  if (!client) notFound();
+  const docs = [...getDocuments("quote"), ...getDocuments("invoice")]
+    .filter((d) => d.client_id === client.id)
+    .sort((a, b) => (a.issue_date < b.issue_date ? 1 : -1));
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold">{client.name}</h1>
+        <form action={async () => { "use server"; await deleteClient(client.id); }}>
+          <button className="btn-danger btn-sm">Delete client</button>
+        </form>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ClientForm client={client} />
+        <div className="card p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="font-semibold">Quotations & invoices</p>
+            <div className="flex gap-2">
+              <Link href={`/admin/quotes/new?client=${client.id}`} className="btn-secondary btn-sm">New quote</Link>
+              <Link href={`/admin/invoices/new?client=${client.id}`} className="btn-primary btn-sm">New invoice</Link>
+            </div>
+          </div>
+          {docs.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">No documents yet for this client.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {docs.map((d) => (
+                <li key={`${d.type}-${d.id}`} className="flex items-center justify-between py-2.5 text-sm">
+                  <div>
+                    <Link href={`/admin/${d.type}s/${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link>
+                    <span className="ml-2 text-xs text-slate-500 capitalize">{d.type}</span>
+                    <p className="text-xs text-slate-500">{date(d.issue_date)}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{money(d.total)}</span>
+                    <Badge value={d.status} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
