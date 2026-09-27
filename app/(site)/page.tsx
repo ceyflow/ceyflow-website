@@ -1,5 +1,6 @@
+"use client";
 import Link from "next/link";
-import { getPackages } from "../../lib/db";
+import { usePackages } from "../../lib/publicData";
 import { SystemIcon } from "../../components/SystemIcon";
 
 const tryChips = [
@@ -26,7 +27,7 @@ const steps = [
 ];
 
 export default function Home() {
-  const packages = getPackages();
+  const packages = usePackages();
   return (
     <>
       {/* Hero */}

@@ -1,26 +1,39 @@
+"use client";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getClient, getDocuments } from "../../../../../lib/db";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getClient, getDocuments, deleteClient, type Client, type DocWithTotals } from "../../../../../lib/adminData";
 import { ClientForm } from "../../../../../components/admin/ClientForm";
 import { Badge } from "../../../../../components/admin/Badge";
 import { money, date } from "../../../../../lib/format";
-import { deleteClient } from "../../../../../lib/actions";
 
-export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const client = getClient(Number(id));
-  if (!client) notFound();
-  const docs = [...getDocuments("quote"), ...getDocuments("invoice")]
-    .filter((d) => d.client_id === client.id)
-    .sort((a, b) => (a.issue_date < b.issue_date ? 1 : -1));
+function ClientView() {
+  const id = Number(useSearchParams().get("id"));
+  const router = useRouter();
+  const [client, setClient] = useState<Client | undefined | null>(null);
+  const [docs, setDocs] = useState<DocWithTotals[]>([]);
+
+  useEffect(() => {
+    getClient(id).then((c) => setClient(c ?? undefined));
+    Promise.all([getDocuments("quote"), getDocuments("invoice")]).then(([quotes, invoices]) => {
+      setDocs([...quotes, ...invoices].filter((d) => d.client_id === id).sort((a, b) => (a.issue_date < b.issue_date ? 1 : -1)));
+    });
+  }, [id]);
+
+  if (client === null) return null;
+  if (client === undefined) return <p className="text-sm text-slate-500">Client not found.</p>;
+
+  async function handleDelete() {
+    if (!confirm("Delete this client? This cannot be undone.")) return;
+    await deleteClient(client!.id);
+    router.push("/admin/clients");
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">{client.name}</h1>
-        <form action={async () => { "use server"; await deleteClient(client.id); }}>
-          <button className="btn-danger btn-sm">Delete client</button>
-        </form>
+        <button onClick={handleDelete} className="btn-danger btn-sm">Delete client</button>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <ClientForm client={client} />
@@ -39,7 +52,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
               {docs.map((d) => (
                 <li key={`${d.type}-${d.id}`} className="flex items-center justify-between py-2.5 text-sm">
                   <div>
-                    <Link href={`/admin/${d.type}s/${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link>
+                    <Link href={`/admin/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link>
                     <span className="ml-2 text-xs text-slate-500 capitalize">{d.type}</span>
                     <p className="text-xs text-slate-500">{date(d.issue_date)}</p>
                   </div>
@@ -54,5 +67,13 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientPage() {
+  return (
+    <Suspense>
+      <ClientView />
+    </Suspense>
   );
 }

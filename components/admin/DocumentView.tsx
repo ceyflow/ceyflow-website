@@ -1,17 +1,21 @@
+"use client";
 import Link from "next/link";
-import type { Client, DocItem, DocType, DocWithTotals, Payment, Settings } from "../../lib/db";
+import type { Client, DocItem, DocType, DocWithTotals, Payment } from "../../lib/adminData";
+import type { Settings } from "../../lib/publicData";
 import { money, date, QUOTE_STATUSES, INVOICE_STATUSES } from "../../lib/format";
 import { Badge } from "./Badge";
-import {
-  addPayment, convertQuoteToInvoice, deleteDocument, deletePayment, setDocumentStatus,
-} from "../../lib/actions";
 import { PrintButton } from "./PrintButton";
 import { StatusSelect } from "./StatusSelect";
 
 export function DocumentView({
-  type, doc, items, client, settings, payments,
+  type, doc, items, client, settings, payments, onStatusChange, onConvert, onDelete, onAddPayment, onDeletePayment,
 }: {
   type: DocType; doc: DocWithTotals; items: DocItem[]; client: Client; settings: Settings; payments?: Payment[];
+  onStatusChange: (status: string) => void;
+  onConvert?: () => void;
+  onDelete: () => void;
+  onAddPayment?: (input: { amount: number; date: string; method: string; note: string }) => void;
+  onDeletePayment?: (paymentId: number) => void;
 }) {
   const cur = settings.currency || "LKR";
   const statuses = type === "quote" ? QUOTE_STATUSES : INVOICE_STATUSES;
@@ -27,21 +31,17 @@ export function DocumentView({
         </div>
         <div className="flex flex-wrap gap-2">
           <StatusSelect
-            action={async (fd) => { "use server"; await setDocumentStatus(type, doc.id, String(fd.get("status"))); }}
+            action={(fd) => onStatusChange(String(fd.get("status")))}
             defaultValue={doc.status}
             options={statuses}
             className="input py-1.5 text-sm capitalize"
           />
           {type === "quote" && doc.status !== "declined" && (
-            <form action={async () => { "use server"; await convertQuoteToInvoice(doc.id); }}>
-              <button className="btn-secondary">Convert to invoice</button>
-            </form>
+            <button onClick={onConvert} className="btn-secondary">Convert to invoice</button>
           )}
-          <Link href={`/admin/${type}s/${doc.id}/edit`} className="btn-secondary">Edit</Link>
+          <Link href={`/admin/${type}s/edit?id=${doc.id}`} className="btn-secondary">Edit</Link>
           <PrintButton />
-          <form action={async () => { "use server"; await deleteDocument(type, doc.id); }}>
-            <button className="btn-danger">Delete</button>
-          </form>
+          <button onClick={onDelete} className="btn-danger">Delete</button>
         </div>
       </div>
 
@@ -125,16 +125,25 @@ export function DocumentView({
                   <span>{date(p.date)} {p.method && `· ${p.method}`} {p.note && `· ${p.note}`}</span>
                   <span className="flex items-center gap-3">
                     <span className="font-medium">{money(p.amount, cur)}</span>
-                    <form action={async () => { "use server"; await deletePayment(doc.id, p.id); }}>
-                      <button className="text-slate-400 hover:text-red-600" aria-label="Remove payment">✕</button>
-                    </form>
+                    <button onClick={() => onDeletePayment?.(p.id)} className="text-slate-400 hover:text-red-600" aria-label="Remove payment">✕</button>
                   </span>
                 </li>
               ))}
             </ul>
           )}
           {doc.balance > 0.001 && (
-            <form action={async (fd) => { "use server"; await addPayment(doc.id, fd); }} className="grid gap-3 sm:grid-cols-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                onAddPayment?.({
+                  amount: Number(fd.get("amount")), date: String(fd.get("date") || ""),
+                  method: String(fd.get("method") || ""), note: String(fd.get("note") || ""),
+                });
+                e.currentTarget.reset();
+              }}
+              className="grid gap-3 sm:grid-cols-4"
+            >
               <input name="amount" type="number" step="any" placeholder={`Amount (balance ${money(doc.balance, cur)})`} required className="input sm:col-span-1" />
               <input name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="input sm:col-span-1" />
               <input name="method" placeholder="Method (bank, cash…)" className="input sm:col-span-1" />

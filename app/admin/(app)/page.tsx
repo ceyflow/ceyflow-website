@@ -1,5 +1,8 @@
+"use client";
 import Link from "next/link";
-import { getClients, getDocuments, getInquiries, getSettings } from "../../../lib/db";
+import { useEffect, useState } from "react";
+import { getClients, getDocuments, getInquiries, type Client, type DocWithTotals, type Inquiry } from "../../../lib/adminData";
+import { useSettings } from "../../../lib/publicData";
 import { money, date } from "../../../lib/format";
 import { Badge } from "../../../components/admin/Badge";
 
@@ -14,12 +17,19 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 export default function Dashboard() {
-  const s = getSettings();
+  const s = useSettings();
   const cur = s.currency || "LKR";
-  const invoices = getDocuments("invoice");
-  const quotes = getDocuments("quote");
-  const clients = getClients();
-  const inquiries = getInquiries();
+  const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
+  const [quotes, setQuotes] = useState<DocWithTotals[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+
+  useEffect(() => {
+    getDocuments("invoice").then(setInvoices);
+    getDocuments("quote").then(setQuotes);
+    getClients().then(setClients);
+    getInquiries().then(setInquiries);
+  }, []);
 
   const outstanding = invoices.filter((i) => i.status !== "paid" && i.status !== "void").reduce((a, i) => a + i.balance, 0);
   const paidThisMonth = invoices
@@ -61,7 +71,7 @@ export default function Dashboard() {
               <tbody>
                 {recentDocs.map((d) => (
                   <tr key={`${d.type}-${d.id}`}>
-                    <td><Link href={`/admin/${d.type}s/${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link></td>
+                    <td><Link href={`/admin/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link></td>
                     <td>{d.client_name}</td>
                     <td>{date(d.issue_date)}</td>
                     <td className="text-right">{money(d.total, cur)}</td>

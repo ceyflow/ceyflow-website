@@ -1,17 +1,58 @@
-import { getBundles, getPackages, getSettings } from "../../../../lib/db";
-import { saveSettings, saveBundlePricing, savePackagePricing } from "../../../../lib/actions";
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../../lib/supabaseClient";
+import { saveSettings, savePackagePricing, saveBundlePricing } from "../../../../lib/adminData";
+import type { Package, Bundle, Settings } from "../../../../lib/publicData";
 import { PasswordForm } from "./PasswordForm";
 
 export default function SettingsPage() {
-  const s = getSettings();
-  const packages = getPackages(false);
-  const bundles = getBundles();
+  const [s, setSettings] = useState<Settings>({});
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const [saved, setSaved] = useState<string | null>(null);
+
+  async function refresh() {
+    const [{ data: settingsRows }, { data: packageRows }, { data: bundleRows }] = await Promise.all([
+      supabase.from("settings").select("key, value"),
+      supabase.from("packages").select("*").order("sort"),
+      supabase.from("bundles").select("*").order("sort"),
+    ]);
+    if (settingsRows) setSettings(Object.fromEntries(settingsRows.map((r) => [r.key, r.value])));
+    if (packageRows) setPackages(packageRows as Package[]);
+    if (bundleRows) setBundles(bundleRows as Bundle[]);
+  }
+  useEffect(() => { refresh(); }, []);
+
+  function flashSaved(what: string) {
+    setSaved(what);
+    setTimeout(() => setSaved((cur) => (cur === what ? null : cur)), 2000);
+  }
+
+  async function handleCompanyDetails(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await saveSettings(Object.fromEntries(fd.entries()) as Record<string, string>);
+    await refresh();
+    flashSaved("company");
+  }
+
+  async function handlePricing(e: React.FormEvent<HTMLFormElement>, kind: "package" | "bundle") {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const id = Number(fd.get("id"));
+    const setup = fd.get("setup_fee") ? Number(fd.get("setup_fee")) : null;
+    const monthly = fd.get("monthly_fee") ? Number(fd.get("monthly_fee")) : null;
+    if (kind === "package") await savePackagePricing(id, setup, monthly);
+    else await saveBundlePricing(id, setup, monthly);
+    await refresh();
+    flashSaved(`${kind}-${id}`);
+  }
 
   return (
     <div className="space-y-8">
       <h1 className="font-display text-2xl font-bold">Settings</h1>
 
-      <form action={saveSettings} className="card max-w-2xl space-y-4 p-6">
+      <form onSubmit={handleCompanyDetails} className="card max-w-2xl space-y-4 p-6">
         <p className="font-semibold">Company details (shown on the public site and on documents)</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div><label className="label">Company name</label><input name="company_name" defaultValue={s.company_name} className="input" /></div>
@@ -29,20 +70,20 @@ export default function SettingsPage() {
         <div><label className="label">Bank / payment details (shown on invoices)</label><textarea name="bank_details" defaultValue={s.bank_details} rows={4} className="input" /></div>
         <div><label className="label">Default quotation terms</label><textarea name="quote_terms" defaultValue={s.quote_terms} rows={3} className="input" /></div>
         <div><label className="label">Default invoice terms</label><textarea name="invoice_terms" defaultValue={s.invoice_terms} rows={3} className="input" /></div>
-        <button className="btn-primary">Save company details</button>
+        <button className="btn-primary">{saved === "company" ? "Saved ✓" : "Save company details"}</button>
       </form>
 
       <div className="card max-w-2xl p-6">
         <p className="mb-4 font-semibold">Package pricing (shown on the public pricing page)</p>
         <div className="space-y-3">
           {packages.map((p) => (
-            <form key={p.id} action={savePackagePricing} className="grid grid-cols-3 items-center gap-3 border-b border-slate-100 pb-3 last:border-0">
+            <form key={p.id} onSubmit={(e) => handlePricing(e, "package")} className="grid grid-cols-3 items-center gap-3 border-b border-slate-100 pb-3 last:border-0">
               <input type="hidden" name="id" value={p.id} />
               <span className="text-sm font-medium">{p.name}</span>
               <input name="setup_fee" type="number" step="any" defaultValue={p.setup_fee ?? ""} placeholder="Setup fee" className="input" />
               <div className="flex gap-2">
                 <input name="monthly_fee" type="number" step="any" defaultValue={p.monthly_fee ?? ""} placeholder="Monthly fee" className="input" />
-                <button className="btn-secondary btn-sm shrink-0">Save</button>
+                <button className="btn-secondary btn-sm shrink-0">{saved === `package-${p.id}` ? "Saved ✓" : "Save"}</button>
               </div>
             </form>
           ))}
@@ -53,13 +94,13 @@ export default function SettingsPage() {
         <p className="mb-4 font-semibold">Bundle pricing</p>
         <div className="space-y-3">
           {bundles.map((b) => (
-            <form key={b.id} action={saveBundlePricing} className="grid grid-cols-3 items-center gap-3 border-b border-slate-100 pb-3 last:border-0">
+            <form key={b.id} onSubmit={(e) => handlePricing(e, "bundle")} className="grid grid-cols-3 items-center gap-3 border-b border-slate-100 pb-3 last:border-0">
               <input type="hidden" name="id" value={b.id} />
               <span className="text-sm font-medium">{b.name}</span>
               <input name="setup_fee" type="number" step="any" defaultValue={b.setup_fee ?? ""} placeholder="Setup fee" className="input" />
               <div className="flex gap-2">
                 <input name="monthly_fee" type="number" step="any" defaultValue={b.monthly_fee ?? ""} placeholder="Monthly fee" className="input" />
-                <button className="btn-secondary btn-sm shrink-0">Save</button>
+                <button className="btn-secondary btn-sm shrink-0">{saved === `bundle-${b.id}` ? "Saved ✓" : "Save"}</button>
               </div>
             </form>
           ))}

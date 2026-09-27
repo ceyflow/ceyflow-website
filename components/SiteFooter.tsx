@@ -1,8 +1,10 @@
+"use client";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import type { Settings } from "../lib/db";
+import { useSettings } from "../lib/publicData";
 
-export function SiteFooter({ s }: { s: Settings }) {
+export function SiteFooter() {
+  const s = useSettings();
   return (
     <footer className="bg-brand-900 text-brand-100">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-4">

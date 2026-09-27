@@ -1,9 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useActionState } from "react";
-import type { Client, DocType, DocWithTotals, DocItem } from "../../lib/db";
-import { saveDocument, type DocState } from "../../lib/actions";
-import { SubmitButton } from "./SubmitButton";
+import type { Client, DocType, DocWithTotals, DocItem, DocInput } from "../../lib/adminData";
 import { money, QUOTE_STATUSES, INVOICE_STATUSES, today } from "../../lib/format";
 
 type Props = {
@@ -14,6 +11,7 @@ type Props = {
   defaultClientId?: number;
   defaultTerms: string;
   currency: string;
+  onSave: (input: DocInput) => Promise<{ error?: string; id?: number }>;
 };
 
 let seq = 0;
@@ -21,9 +19,9 @@ function newRow(it?: DocItem) {
   return { key: `row-${++seq}`, description: it?.description || "", qty: it?.qty ?? 1, unit_price: it?.unit_price ?? 0 };
 }
 
-export function DocumentForm({ type, clients, doc, items, defaultClientId, defaultTerms, currency }: Props) {
-  const action = saveDocument.bind(null, type);
-  const [state, formAction] = useActionState<DocState, FormData>(action, {});
+export function DocumentForm({ type, clients, doc, items, defaultClientId, defaultTerms, currency, onSave }: Props) {
+  const [error, setError] = useState<string | undefined>();
+  const [pending, setPending] = useState(false);
   const [rows, setRows] = useState(() => (items && items.length ? items.map((i) => newRow(i)) : [newRow()]));
   const [discount, setDiscount] = useState(doc?.discount ?? 0);
   const [taxRate, setTaxRate] = useState(doc?.tax_rate ?? 0);
@@ -38,9 +36,30 @@ export function DocumentForm({ type, clients, doc, items, defaultClientId, defau
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setPending(true);
+    setError(undefined);
+    const result = await onSave({
+      id: doc?.id,
+      client_id: Number(fd.get("client_id")),
+      issue_date: String(fd.get("issue_date") || today()),
+      due_date: String(fd.get("due_date") || "") || null,
+      status: String(fd.get("status") || "draft"),
+      title: String(fd.get("title") || "").trim(),
+      notes: String(fd.get("notes") || "").trim(),
+      terms: String(fd.get("terms") || "").trim(),
+      discount: Number(discount) || 0,
+      tax_rate: Number(taxRate) || 0,
+      items: rows.map((r) => ({ description: r.description.trim(), qty: Number(r.qty) || 0, unit_price: Number(r.unit_price) || 0 })).filter((i) => i.description),
+    });
+    setPending(false);
+    if (result.error) setError(result.error);
+  }
+
   return (
-    <form action={formAction} className="space-y-6">
-      {doc && <input type="hidden" name="id" value={doc.id} />}
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="card grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-2">
           <label className="label">Client *</label>
@@ -69,17 +88,17 @@ export function DocumentForm({ type, clients, doc, items, defaultClientId, defau
           {rows.map((r) => (
             <div key={r.key} className="grid grid-cols-12 items-start gap-2">
               <input
-                name="item_description" defaultValue={r.description} placeholder="Item description"
+                defaultValue={r.description} placeholder="Item description"
                 onChange={(e) => update(r.key, { description: e.target.value })}
                 className="input col-span-12 sm:col-span-6"
               />
               <input
-                name="item_qty" type="number" step="any" defaultValue={r.qty}
+                type="number" step="any" defaultValue={r.qty}
                 onChange={(e) => update(r.key, { qty: Number(e.target.value) })}
                 className="input col-span-4 sm:col-span-2"
               />
               <input
-                name="item_price" type="number" step="any" defaultValue={r.unit_price}
+                type="number" step="any" defaultValue={r.unit_price}
                 onChange={(e) => update(r.key, { unit_price: Number(e.target.value) })}
                 className="input col-span-5 sm:col-span-2"
               />
@@ -115,9 +134,9 @@ export function DocumentForm({ type, clients, doc, items, defaultClientId, defau
         <div><label className="label">Terms</label><textarea name="terms" defaultValue={doc?.terms ?? defaultTerms} rows={3} className="input" /></div>
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex gap-3">
-        <SubmitButton>{doc ? "Save changes" : `Create ${type}`}</SubmitButton>
+        <button className="btn-primary" disabled={pending} type="submit">{pending ? "Saving..." : doc ? "Save changes" : `Create ${type}`}</button>
       </div>
     </form>
   );
