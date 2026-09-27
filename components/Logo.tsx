@@ -1,4 +1,19 @@
+"use client";
+import { useSettings } from "../lib/publicData";
+
 export function Logo({ light = false, className = "" }: { light?: boolean; className?: string }) {
+  const s = useSettings();
+  const custom = light ? s.logo_dark_bg : s.logo_light_bg;
+
+  if (custom) {
+    return (
+      <span className={`inline-flex items-center ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={custom} alt={s.company_name || "Ceyflow"} className="h-8 w-auto object-contain" />
+      </span>
+    );
+  }
+
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <span className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-md bg-white p-1 ring-1 ring-black/5">

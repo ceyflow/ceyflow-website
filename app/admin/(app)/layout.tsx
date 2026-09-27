@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-slate-50 md:flex">
-      <aside className="no-print flex flex-none flex-col border-b border-slate-200 bg-white md:h-screen md:w-56 md:border-b-0 md:border-r">
+      <aside className="no-print flex flex-none flex-col border-b border-slate-200 bg-white md:sticky md:top-0 md:h-screen md:w-56 md:self-start md:border-b-0 md:border-r">
         <div className="flex items-center justify-between px-5 py-4">
           <Link href="/admin"><Logo /></Link>
         </div>
