@@ -1,10 +1,10 @@
+"use client";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSession, logout } from "../../../lib/actions";
-import { getInquiries } from "../../../lib/db";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "../../../lib/authClient";
+import { getInquiries } from "../../../lib/adminData";
 import { Logo } from "../../../components/Logo";
-
-export const dynamic = "force-dynamic";
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" },
@@ -15,10 +15,28 @@ const nav = [
   { href: "/admin/settings", label: "Settings", icon: "M12 15a3 3 0 100-6 3 3 0 000 6zM19 12a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.3.9a7 7 0 00-2-1.2L14 3h-4l-.6 2.5a7 7 0 00-2 1.2l-2.3-.9-2 3.4 2 1.6a7 7 0 000 2.4l-2 1.6 2 3.4 2.3-.9a7 7 0 002 1.2L10 21h4l.6-2.5a7 7 0 002-1.2l2.3.9 2-3.4-2-1.6c.07-.4.1-.8.1-1.2z" },
 ];
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession();
-  if (!session) redirect("/admin/login");
-  const newInquiries = getInquiries().filter((i) => i.status === "new").length;
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useSession();
+  const router = useRouter();
+  const [newInquiries, setNewInquiries] = useState(0);
+
+  useEffect(() => {
+    if (!loading && !session) router.replace("/admin/login");
+  }, [loading, session, router]);
+
+  useEffect(() => {
+    if (!session) return;
+    getInquiries().then((rows) => setNewInquiries(rows.filter((i) => i.status === "new").length)).catch(() => {});
+  }, [session]);
+
+  if (loading || !session) return null;
+
+  async function handleSignOut() {
+    await signOut();
+    router.replace("/admin/login");
+  }
+
+  const name = (session.user.user_metadata?.name as string | undefined) || session.user.email || "";
 
   return (
     <div className="min-h-screen bg-slate-50 md:flex">
@@ -38,11 +56,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
         <div className="border-t border-slate-100 p-4">
-          <p className="truncate text-sm font-medium text-slate-700">{session.name}</p>
-          <p className="truncate text-xs text-slate-500">{session.email}</p>
+          <p className="truncate text-sm font-medium text-slate-700">{name}</p>
+          <p className="truncate text-xs text-slate-500">{session.user.email}</p>
           <div className="mt-3 flex gap-2">
             <Link href="/" className="text-xs font-medium text-slate-500 hover:text-slate-800">View site</Link>
-            <form action={logout} className="ml-auto"><button className="text-xs font-medium text-red-600 hover:text-red-700">Sign out</button></form>
+            <button onClick={handleSignOut} className="ml-auto text-xs font-medium text-red-600 hover:text-red-700">Sign out</button>
           </div>
         </div>
       </aside>

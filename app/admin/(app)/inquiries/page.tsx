@@ -1,13 +1,22 @@
-import { getInquiries } from "../../../../lib/db";
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getInquiries, setInquiryStatus, convertInquiry, type Inquiry } from "../../../../lib/adminData";
 import { Badge } from "../../../../components/admin/Badge";
 import { StatusSelect } from "../../../../components/admin/StatusSelect";
 import { date } from "../../../../lib/format";
-import { convertInquiry, setInquiryStatus } from "../../../../lib/actions";
 
 const statuses = ["new", "contacted", "converted", "closed"];
 
 export default function InquiriesPage() {
-  const inquiries = getInquiries();
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const router = useRouter();
+
+  function refresh() {
+    getInquiries().then(setInquiries);
+  }
+  useEffect(refresh, []);
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold">Website inquiries</h1>
@@ -29,14 +38,17 @@ export default function InquiriesPage() {
                   <Badge value={i.status} />
                   <div className="flex gap-2">
                     <StatusSelect
-                      action={async (fd) => { "use server"; await setInquiryStatus(i.id, String(fd.get("status"))); }}
+                      action={async (fd) => { await setInquiryStatus(i.id, String(fd.get("status"))); refresh(); }}
                       defaultValue={i.status}
                       options={statuses}
                     />
                     {!i.client_id && (
-                      <form action={async () => { "use server"; await convertInquiry(i.id); }}>
-                        <button className="btn-secondary btn-sm">Convert to client</button>
-                      </form>
+                      <button
+                        onClick={async () => { const clientId = await convertInquiry(i.id); if (clientId) router.push(`/admin/clients/view?id=${clientId}`); }}
+                        className="btn-secondary btn-sm"
+                      >
+                        Convert to client
+                      </button>
                     )}
                   </div>
                 </div>

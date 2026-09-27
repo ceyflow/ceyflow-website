@@ -1,9 +1,16 @@
+"use client";
 import Link from "next/link";
-import { getClients, getDocuments } from "../../../../lib/db";
+import { useEffect, useState } from "react";
+import { getClients, getDocuments, type Client, type DocWithTotals } from "../../../../lib/adminData";
 
 export default function ClientsPage() {
-  const clients = getClients();
-  const invoices = getDocuments("invoice");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
+
+  useEffect(() => {
+    getClients().then(setClients);
+    getDocuments("invoice").then(setInvoices);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -22,7 +29,7 @@ export default function ClientsPage() {
                 const owed = invoices.filter((i) => i.client_id === c.id && i.status !== "void").reduce((a, i) => a + i.balance, 0);
                 return (
                   <tr key={c.id}>
-                    <td><Link href={`/admin/clients/${c.id}`} className="font-medium text-brand-700 hover:underline">{c.name}</Link></td>
+                    <td><Link href={`/admin/clients/view?id=${c.id}`} className="font-medium text-brand-700 hover:underline">{c.name}</Link></td>
                     <td className="text-slate-600">{c.company}</td>
                     <td className="text-slate-600">{c.email || c.phone}</td>
                     <td className={`text-right ${owed > 0 ? "font-medium text-amber-700" : "text-slate-400"}`}>

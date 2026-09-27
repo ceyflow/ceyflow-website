@@ -1,11 +1,17 @@
+"use client";
 import Link from "next/link";
-import { getDocuments, getSettings } from "../../../../lib/db";
+import { useEffect, useState } from "react";
+import { getDocuments, type DocWithTotals } from "../../../../lib/adminData";
+import { useSettings } from "../../../../lib/publicData";
 import { Badge } from "../../../../components/admin/Badge";
 import { money, date } from "../../../../lib/format";
 
 export default function QuotesPage() {
-  const quotes = getDocuments("quote");
-  const cur = getSettings().currency || "LKR";
+  const [quotes, setQuotes] = useState<DocWithTotals[]>([]);
+  const cur = useSettings().currency || "LKR";
+
+  useEffect(() => { getDocuments("quote").then(setQuotes); }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -21,7 +27,7 @@ export default function QuotesPage() {
             <tbody>
               {quotes.map((q) => (
                 <tr key={q.id}>
-                  <td><Link href={`/admin/quotes/${q.id}`} className="font-medium text-brand-700 hover:underline">{q.number}</Link></td>
+                  <td><Link href={`/admin/quotes/view?id=${q.id}`} className="font-medium text-brand-700 hover:underline">{q.number}</Link></td>
                   <td>{q.client_name}</td>
                   <td>{date(q.issue_date)}</td>
                   <td className="text-right">{money(q.total, cur)}</td>

@@ -1,10 +1,28 @@
 "use client";
-import { useActionState } from "react";
-import { submitInquiry, type ContactState } from "./actions";
+import { useState } from "react";
+import { submitInquiry } from "../../../lib/adminData";
 
 export function ContactForm({ interest, message = "", options }: { interest: string; message?: string; options: string[] }) {
-  const [state, action, pending] = useActionState<ContactState, FormData>(submitInquiry, { ok: false });
-  if (state.ok) {
+  const [ok, setOk] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    if (String(fd.get("website") || "")) { setOk(true); return; } // honeypot
+    setPending(true);
+    setError(undefined);
+    const result = await submitInquiry({
+      name: String(fd.get("name") || ""), company: String(fd.get("company") || ""),
+      email: String(fd.get("email") || ""), phone: String(fd.get("phone") || ""),
+      interest: String(fd.get("interest") || ""), message: String(fd.get("message") || ""),
+    });
+    setPending(false);
+    if (result.ok) setOk(true); else setError(result.error);
+  }
+
+  if (ok) {
     return (
       <div className="card p-8 text-center">
         <p className="font-display text-2xl font-bold">Thank you!</p>
@@ -13,7 +31,7 @@ export function ContactForm({ interest, message = "", options }: { interest: str
     );
   }
   return (
-    <form action={action} className="card space-y-4 p-6 md:p-8">
+    <form onSubmit={handleSubmit} className="card space-y-4 p-6 md:p-8">
       <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
       <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="label" htmlFor="name">Your name *</label><input id="name" name="name" className="input" required /></div>
@@ -32,7 +50,7 @@ export function ContactForm({ interest, message = "", options }: { interest: str
         <label className="label" htmlFor="message">Tell us about your business</label>
         <textarea id="message" name="message" rows={5} className="input" defaultValue={message} placeholder="What do you sell, how do orders come in, and what's slowing you down?" />
       </div>
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <button className="btn-primary w-full py-3 text-base" disabled={pending}>{pending ? "Sending..." : "Send message"}</button>
     </form>
   );

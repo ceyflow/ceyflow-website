@@ -1,11 +1,17 @@
+"use client";
 import Link from "next/link";
-import { getDocuments, getSettings } from "../../../../lib/db";
+import { useEffect, useState } from "react";
+import { getDocuments, type DocWithTotals } from "../../../../lib/adminData";
+import { useSettings } from "../../../../lib/publicData";
 import { Badge } from "../../../../components/admin/Badge";
 import { money, date } from "../../../../lib/format";
 
 export default function InvoicesPage() {
-  const invoices = getDocuments("invoice");
-  const cur = getSettings().currency || "LKR";
+  const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
+  const cur = useSettings().currency || "LKR";
+
+  useEffect(() => { getDocuments("invoice").then(setInvoices); }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -21,7 +27,7 @@ export default function InvoicesPage() {
             <tbody>
               {invoices.map((inv) => (
                 <tr key={inv.id}>
-                  <td><Link href={`/admin/invoices/${inv.id}`} className="font-medium text-brand-700 hover:underline">{inv.number}</Link></td>
+                  <td><Link href={`/admin/invoices/view?id=${inv.id}`} className="font-medium text-brand-700 hover:underline">{inv.number}</Link></td>
                   <td>{inv.client_name}</td>
                   <td>{date(inv.issue_date)}</td>
                   <td className="text-right">{money(inv.total, cur)}</td>
