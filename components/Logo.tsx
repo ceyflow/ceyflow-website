@@ -9,7 +9,7 @@ export function Logo({ light = false, className = "" }: { light?: boolean; class
     return (
       <span className={`inline-flex items-center ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={custom} alt={s.company_name || "Ceyflow"} className="h-8 w-auto object-contain" />
+        <img src={custom} alt={s.company_name || "Ceyflow"} className="h-12 w-auto object-contain" />
       </span>
     );
   }
