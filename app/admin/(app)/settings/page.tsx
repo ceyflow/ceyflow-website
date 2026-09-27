@@ -5,11 +5,39 @@ import { saveSettings, savePackagePricing, saveBundlePricing } from "../../../..
 import type { Package, Bundle, Settings } from "../../../../lib/publicData";
 import { PasswordForm } from "./PasswordForm";
 
+// Logos are stored as data URIs directly in the settings table (no Supabase Storage
+// bucket needed), so downscale before saving — this table gets fetched on every
+// public page load, and an unshrunk phone photo would bloat that badly.
+function resizeToDataUrl(file: File, maxDim = 320, quality = 0.9): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas not supported")); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      const isPng = file.type === "image/png" || file.type === "image/svg+xml";
+      resolve(canvas.toDataURL(isPng ? "image/png" : "image/jpeg", quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read image")); };
+    img.src = url;
+  });
+}
+
 export default function SettingsPage() {
   const [s, setSettings] = useState<Settings>({});
   const [packages, setPackages] = useState<Package[]>([]);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [saved, setSaved] = useState<string | null>(null);
+  const [logoBusy, setLogoBusy] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
 
   async function refresh() {
     const [{ data: settingsRows }, { data: packageRows }, { data: bundleRows }] = await Promise.all([
@@ -36,6 +64,28 @@ export default function SettingsPage() {
     flashSaved("company");
   }
 
+  async function handleLogoUpload(key: "logo_light_bg" | "logo_dark_bg", file: File | undefined) {
+    if (!file) return;
+    setLogoError(null);
+    setLogoBusy(key);
+    try {
+      const dataUrl = await resizeToDataUrl(file, key === "logo_dark_bg" ? 240 : 320);
+      await saveSettings({ [key]: dataUrl });
+      await refresh();
+    } catch {
+      setLogoError("Could not use that image — try a PNG or JPG.");
+    } finally {
+      setLogoBusy(null);
+    }
+  }
+
+  async function handleLogoRemove(key: "logo_light_bg" | "logo_dark_bg") {
+    setLogoBusy(key);
+    await saveSettings({ [key]: "" });
+    await refresh();
+    setLogoBusy(null);
+  }
+
   async function handlePricing(e: React.FormEvent<HTMLFormElement>, kind: "package" | "bundle") {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -51,6 +101,49 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <h1 className="font-display text-2xl font-bold">Settings</h1>
+
+      <div className="card max-w-2xl space-y-5 p-6">
+        <div>
+          <p className="font-semibold">Logo</p>
+          <p className="text-sm text-slate-500">Replaces the Ceyflow logo shown on the website, admin panel, and login page. PNG or JPG, transparent background works best.</p>
+        </div>
+        {logoError && <p className="text-sm text-red-600">{logoError}</p>}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {([
+            { key: "logo_light_bg" as const, label: "Logo (site header, admin, login)", swatch: "bg-white ring-1 ring-slate-200" },
+            { key: "logo_dark_bg" as const, label: "Logo (footer — dark background)", swatch: "bg-brand-900" },
+          ]).map(({ key, label, swatch }) => (
+            <div key={key} className="space-y-2">
+              <label className="label">{label}</label>
+              <div className={`flex h-16 items-center justify-center rounded-lg ${swatch} p-2`}>
+                {s[key] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={s[key]} alt="" className="h-full max-w-full object-contain" />
+                ) : (
+                  <span className="text-xs text-slate-400">Using default logo</span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="btn-secondary btn-sm cursor-pointer">
+                  {logoBusy === key ? "Uploading..." : "Upload"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="hidden"
+                    disabled={logoBusy === key}
+                    onChange={(e) => { void handleLogoUpload(key, e.target.files?.[0]); e.target.value = ""; }}
+                  />
+                </label>
+                {s[key] && (
+                  <button type="button" onClick={() => handleLogoRemove(key)} disabled={logoBusy === key} className="text-xs font-medium text-red-600 hover:text-red-700">
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <form onSubmit={handleCompanyDetails} className="card max-w-2xl space-y-4 p-6">
         <p className="font-semibold">Company details (shown on the public site and on documents)</p>
