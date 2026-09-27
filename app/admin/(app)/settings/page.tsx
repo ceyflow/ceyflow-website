@@ -4,40 +4,9 @@ import { supabase } from "../../../../lib/supabaseClient";
 import { saveSettings, savePackagePricing, saveBundlePricing } from "../../../../lib/adminData";
 import type { Package, Bundle, Settings } from "../../../../lib/publicData";
 import { PasswordForm } from "./PasswordForm";
+import { LogoCropModal } from "./LogoCropModal";
 
-// Logos are stored as data URIs directly in the settings table (no Supabase Storage
-// bucket needed), so downscale before saving — this table gets fetched on every
-// public page load, and an unshrunk phone photo would bloat that badly.
-type ResizedImage = { dataUrl: string; width: number; height: number; bytes: number };
-
-function resizeToDataUrl(file: File, maxDim = 320, quality = 0.9): Promise<ResizedImage> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-      const w = Math.max(1, Math.round(img.width * scale));
-      const h = Math.max(1, Math.round(img.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("Canvas not supported")); return; }
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      const isPng = file.type === "image/png" || file.type === "image/svg+xml";
-      const dataUrl = canvas.toDataURL(isPng ? "image/png" : "image/jpeg", quality);
-      const bytes = Math.round((dataUrl.length - dataUrl.indexOf(",") - 1) * 0.75);
-      resolve({ dataUrl, width: w, height: h, bytes });
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read image")); };
-    img.src = url;
-  });
-}
-
-function formatBytes(bytes: number) {
-  return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 1024 * 100 ? 1 : 0)} KB`;
-}
+type LogoKey = "logo_light_bg" | "logo_dark_bg";
 
 export default function SettingsPage() {
   const [s, setSettings] = useState<Settings>({});
@@ -46,7 +15,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState<string | null>(null);
   const [logoBusy, setLogoBusy] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
-  const [pendingLogo, setPendingLogo] = useState<Partial<Record<"logo_light_bg" | "logo_dark_bg", ResizedImage & { fileName: string }>>>({});
+  const [cropTarget, setCropTarget] = useState<{ key: LogoKey; file: File } | null>(null);
 
   async function refresh() {
     const [{ data: settingsRows }, { data: packageRows }, { data: bundleRows }] = await Promise.all([
@@ -73,35 +42,21 @@ export default function SettingsPage() {
     flashSaved("company");
   }
 
-  async function handleLogoPick(key: "logo_light_bg" | "logo_dark_bg", file: File | undefined) {
-    if (!file) return;
+  async function handleLogoCropSave(key: LogoKey, dataUrl: string) {
     setLogoError(null);
     setLogoBusy(key);
     try {
-      const resized = await resizeToDataUrl(file, key === "logo_dark_bg" ? 240 : 320);
-      setPendingLogo((cur) => ({ ...cur, [key]: { ...resized, fileName: file.name } }));
+      await saveSettings({ [key]: dataUrl });
+      await refresh();
+      setCropTarget(null);
     } catch {
-      setLogoError("Could not use that image — try a PNG or JPG.");
+      setLogoError("Could not save that logo — try again.");
     } finally {
       setLogoBusy(null);
     }
   }
 
-  async function handleLogoSave(key: "logo_light_bg" | "logo_dark_bg") {
-    const pending = pendingLogo[key];
-    if (!pending) return;
-    setLogoBusy(key);
-    await saveSettings({ [key]: pending.dataUrl });
-    await refresh();
-    setPendingLogo((cur) => { const next = { ...cur }; delete next[key]; return next; });
-    setLogoBusy(null);
-  }
-
-  function handleLogoCancel(key: "logo_light_bg" | "logo_dark_bg") {
-    setPendingLogo((cur) => { const next = { ...cur }; delete next[key]; return next; });
-  }
-
-  async function handleLogoRemove(key: "logo_light_bg" | "logo_dark_bg") {
+  async function handleLogoRemove(key: LogoKey) {
     setLogoBusy(key);
     await saveSettings({ [key]: "" });
     await refresh();
@@ -134,62 +89,50 @@ export default function SettingsPage() {
           {([
             { key: "logo_light_bg" as const, label: "Logo (site header, admin, login)", swatch: "bg-white ring-1 ring-slate-200" },
             { key: "logo_dark_bg" as const, label: "Logo (footer — dark background)", swatch: "bg-brand-900" },
-          ]).map(({ key, label, swatch }) => {
-            const pending = pendingLogo[key];
-            return (
-              <div key={key} className="space-y-2">
-                <label className="label">{label}</label>
-                <div className={`flex h-16 items-center justify-center rounded-lg ${swatch} p-2`}>
-                  {s[key] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={s[key]} alt="" className="h-full max-w-full object-contain" />
-                  ) : (
-                    <span className="text-xs text-slate-400">Using default logo</span>
-                  )}
-                </div>
-
-                {pending ? (
-                  <div className="space-y-2 rounded-lg border border-brand-200 bg-brand-50 p-3">
-                    <div className={`flex h-14 items-center justify-center rounded-md ${swatch} p-2`}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={pending.dataUrl} alt="" className="h-full max-w-full object-contain" />
-                    </div>
-                    <p className="truncate text-xs text-slate-600">
-                      {pending.fileName} · {pending.width}×{pending.height} · {formatBytes(pending.bytes)}
-                    </p>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => handleLogoSave(key)} disabled={logoBusy === key} className="btn-primary btn-sm">
-                        {logoBusy === key ? "Saving..." : "Save"}
-                      </button>
-                      <button type="button" onClick={() => handleLogoCancel(key)} disabled={logoBusy === key} className="btn-secondary btn-sm">
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+          ]).map(({ key, label, swatch }) => (
+            <div key={key} className="space-y-2">
+              <label className="label">{label}</label>
+              <div className={`flex h-16 items-center justify-center rounded-lg ${swatch} p-2`}>
+                {s[key] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={s[key]} alt="" className="h-full max-w-full object-contain" />
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <label className="btn-secondary btn-sm cursor-pointer">
-                      {logoBusy === key ? "Reading..." : "Upload"}
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                        className="hidden"
-                        disabled={logoBusy === key}
-                        onChange={(e) => { void handleLogoPick(key, e.target.files?.[0]); e.target.value = ""; }}
-                      />
-                    </label>
-                    {s[key] && (
-                      <button type="button" onClick={() => handleLogoRemove(key)} disabled={logoBusy === key} className="text-xs font-medium text-red-600 hover:text-red-700">
-                        Remove
-                      </button>
-                    )}
-                  </div>
+                  <span className="text-xs text-slate-400">Using default logo</span>
                 )}
               </div>
-            );
-          })}
+              <div className="flex items-center gap-3">
+                <label className="btn-secondary btn-sm cursor-pointer">
+                  {logoBusy === key ? "Saving..." : "Upload"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    disabled={logoBusy === key}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (file) setCropTarget({ key, file });
+                    }}
+                  />
+                </label>
+                {s[key] && (
+                  <button type="button" onClick={() => handleLogoRemove(key)} disabled={logoBusy === key} className="text-xs font-medium text-red-600 hover:text-red-700">
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
+      {cropTarget && (
+        <LogoCropModal
+          file={cropTarget.file}
+          onCancel={() => setCropTarget(null)}
+          onSave={(dataUrl) => handleLogoCropSave(cropTarget.key, dataUrl)}
+        />
+      )}
 
       <form onSubmit={handleCompanyDetails} className="card max-w-2xl space-y-4 p-6">
         <p className="font-semibold">Company details (shown on the public site and on documents)</p>
