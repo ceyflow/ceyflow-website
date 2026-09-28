@@ -66,6 +66,57 @@ body { background: #ffffff; color: var(--color-ink); }
   .animate-sms-pop { animation: none; opacity: 1; transform: none; }
 }
 
+.animate-float { animation: float 4s ease-in-out infinite; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-stage-fade { animation: stage-fade 200ms ease-out; }
+@keyframes stage-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-notif-drop { animation: notif-drop 500ms ease-out; }
+@keyframes notif-drop {
+  0% { transform: translateY(-24px); opacity: 0; }
+  70% { transform: translateY(4px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-spin-slow { animation: spin-slow 1.6s linear infinite; }
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.animate-truck-move { animation: truck-move 2.4s ease-in-out infinite alternate; }
+@keyframes truck-move {
+  from { left: 0; }
+  to { left: calc(100% - 24px); }
+}
+
+.animate-check-pop { animation: check-pop 450ms ease-out; }
+@keyframes check-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-stage-fade,
+  .animate-notif-drop,
+  .animate-spin-slow,
+  .animate-truck-move,
+  .animate-check-pop {
+    animation: none;
+  }
+  .animate-notif-drop,
+  .animate-check-pop { opacity: 1; transform: none; }
+  .animate-truck-move { left: calc(100% - 24px); }
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: white; }

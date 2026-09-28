@@ -1,5 +1,6 @@
 "use client";
 import { useScrollScrub } from "../lib/useScrollScrub";
+import { PhoneMockup } from "./PhoneMockup";
 
 const STAGES = [
   { key: "received", label: "Order received", time: "10:02 AM", detail: "Payment confirmed · COD verified" },
@@ -8,28 +9,119 @@ const STAGES = [
   { key: "delivered", label: "Delivered", time: "1:05 PM", detail: "Signed by receiver · SMS sent" },
 ] as const;
 
-const ICONS = [
-  // received — package
-  <path key="box" d="M24 6 6 14v20l18 8 18-8V14L24 6Z M6 14l18 8 18-8 M24 22v20" />,
-  // processing — clock
-  <path key="clock" d="M24 6a18 18 0 1 0 .01 0Z M24 14v10l7 5" />,
-  // dispatching — truck
-  <path key="truck" d="M4 14h22v18H4Z M26 20h9l7 7v5H26Z M14 39a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M35 39a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />,
-  // delivered — check circle
-  <path key="check" d="M24 6a18 18 0 1 0 .01 0Z M16 24l6 6 12-12" />,
-];
-
-function RING_R() {
-  return 84;
+function iconProps(className: string) {
+  return { viewBox: "0 0 48 48", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className };
 }
+
+function BoxIcon({ className }: { className: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <path d="M24 6 6 14v20l18 8 18-8V14L24 6Z" />
+      <path d="M6 14l18 8 18-8M24 22v20" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <circle cx="24" cy="24" r="18" />
+      <path d="M24 14v10l7 5" />
+    </svg>
+  );
+}
+
+function TruckIcon({ className }: { className: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <path d="M4 14h22v18H4Z" />
+      <path d="M26 20h9l7 7v5H26Z" />
+      <circle cx="14" cy="39" r="3" />
+      <circle cx="35" cy="39" r="3" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <circle cx="24" cy="24" r="18" />
+      <path d="M16 24l6 6 12-12" />
+    </svg>
+  );
+}
+
+function ReceivedScreen() {
+  return (
+    <div className="flex h-full flex-col bg-gradient-to-b from-brand-600 to-brand-900 px-3 pt-8">
+      <p className="text-center text-[10px] font-medium text-white/70">9:41</p>
+      <div className="animate-notif-drop mt-8 rounded-xl bg-white p-3 shadow-lg">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand-50 text-brand-700">
+            <BoxIcon className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-semibold text-slate-800">New order received</p>
+            <p className="text-[10px] text-slate-500">#1042 · Rs 4,250 · just now</p>
+          </div>
+        </div>
+      </div>
+      <p className="mt-3 text-center text-[10px] text-white/50">Payment confirmed · COD verified</p>
+    </div>
+  );
+}
+
+function ProcessingScreen() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 bg-white px-6 text-center">
+      <div className="relative h-16 w-16">
+        <svg viewBox="0 0 48 48" className="animate-spin-slow h-full w-full" fill="none">
+          <circle cx="24" cy="24" r="20" stroke="#e2e8f0" strokeWidth="4" />
+          <path d="M24 4a20 20 0 0 1 20 20" stroke="#3853a4" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+        <ClockIcon className="absolute inset-0 m-auto h-6 w-6 text-brand-700" />
+      </div>
+      <p className="text-[11px] font-semibold text-slate-800">Processing your order</p>
+      <p className="text-[10px] text-slate-500">Picked, packed &amp; labeled</p>
+    </div>
+  );
+}
+
+function DispatchingScreen() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 bg-white px-6">
+      <p className="text-center text-[11px] font-semibold text-slate-800">Out for delivery</p>
+      <div className="relative h-6 w-full">
+        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-slate-100" />
+        <div className="animate-truck-move absolute top-1/2 -translate-y-1/2">
+          <TruckIcon className="h-6 w-6 text-brand-700" />
+        </div>
+      </div>
+      <p className="text-center text-[10px] text-slate-500">Colombo hub → your address</p>
+    </div>
+  );
+}
+
+function DeliveredScreen() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 bg-white px-6 text-center">
+      <div className="animate-check-pop flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-2 ring-emerald-200">
+        <CheckIcon className="h-8 w-8" />
+      </div>
+      <p className="text-[11px] font-semibold text-slate-800">Delivered</p>
+      <p className="text-[10px] text-slate-500">Signed by receiver · SMS sent</p>
+    </div>
+  );
+}
+
+const SCREENS = [ReceivedScreen, ProcessingScreen, DispatchingScreen, DeliveredScreen];
 
 export function OrderJourney() {
   const { ref, progress } = useScrollScrub<HTMLDivElement>();
   const stageFloat = progress * (STAGES.length - 1);
   const stageIndex = Math.min(STAGES.length - 1, Math.floor(stageFloat + 1e-6));
   const stage = STAGES[stageIndex];
-  const r = RING_R();
-  const circumference = 2 * Math.PI * r;
+  const Screen = SCREENS[stageIndex];
 
   return (
     <section ref={ref} className="relative bg-ink" style={{ height: "340vh" }}>
@@ -93,56 +185,18 @@ export function OrderJourney() {
             </ol>
           </div>
 
-          {/* right: progress ring + icon + status panel */}
-          <div className="relative mx-auto flex h-72 w-72 items-center justify-center md:h-80 md:w-80">
-            <svg viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
-              <circle cx="100" cy="100" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-              <circle
-                cx="100"
-                cy="100"
-                r={r}
-                fill="none"
-                stroke="url(#journeyRingGrad)"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference * (1 - progress)}
-                style={{ transition: "stroke-dashoffset 80ms linear" }}
-              />
-              <defs>
-                <linearGradient id="journeyRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#49c8ef" />
-                  <stop offset="100%" stopColor="#5470c5" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <div className="relative flex h-44 w-44 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 backdrop-blur-sm">
-              {ICONS.map((path, i) => (
-                <svg
-                  key={i}
-                  viewBox="0 0 48 48"
-                  className="absolute h-16 w-16 text-accent transition-opacity duration-300"
-                  style={{ opacity: i === stageIndex ? 1 : 0 }}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {path}
-                </svg>
-              ))}
+          {/* right: animated phone mockup walking through the order lifecycle */}
+          <div className="flex flex-col items-center">
+            <div className="animate-float">
+              <PhoneMockup size={240}>
+                <div key={stageIndex} className="animate-stage-fade h-full w-full">
+                  <Screen />
+                </div>
+              </PhoneMockup>
             </div>
-
-            {/* status readout, echoing a dev-console panel */}
-            <div className="absolute -bottom-8 left-1/2 w-60 -translate-x-1/2 rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] text-white/70 backdrop-blur-sm md:-right-14 md:bottom-10 md:left-auto md:translate-x-0">
-              <p className="text-accent">order.status</p>
-              <p className="mt-0.5 text-white">
-                → &quot;{stage.key}&quot;
-              </p>
-              <p className="mt-1 text-white/40">#1042 · {stage.time}</p>
-            </div>
+            <p className="mt-6 font-mono text-xs text-white/40">
+              #1042 · {stage.label} · {stage.time}
+            </p>
           </div>
         </div>
       </div>

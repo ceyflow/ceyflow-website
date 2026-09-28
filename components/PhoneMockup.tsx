@@ -1,6 +1,17 @@
-export function PhoneMockup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function PhoneMockup({
+  children,
+  className = "",
+  size = 220,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  size?: number;
+}) {
   return (
-    <div className={`relative mx-auto w-[220px] rounded-[2.25rem] border-[6px] border-slate-900 bg-slate-900 shadow-2xl shadow-brand-900/20 ${className}`}>
+    <div
+      className={`relative mx-auto rounded-[2.25rem] border-[6px] border-slate-900 bg-slate-900 shadow-2xl shadow-brand-900/20 ring-1 ring-white/10 ${className}`}
+      style={{ width: size }}
+    >
       <div className="absolute top-0 left-1/2 z-10 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-slate-900" />
       <div className="overflow-hidden rounded-[1.6rem] bg-white" style={{ aspectRatio: "9 / 19.5" }}>
         {children}
