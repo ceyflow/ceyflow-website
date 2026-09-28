@@ -55,6 +55,17 @@ body { background: #ffffff; color: var(--color-ink); }
   .hero-diagonal-bg { animation: none; }
 }
 
+.animate-sms-pop { animation: sms-pop 4s ease-in-out infinite; }
+@keyframes sms-pop {
+  0% { transform: translateY(-16px); opacity: 0; }
+  15% { transform: translateY(0); opacity: 1; }
+  85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-16px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-sms-pop { animation: none; opacity: 1; transform: none; }
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: white; }
