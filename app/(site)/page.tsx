@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { usePackages } from "../../lib/publicData";
 import { SystemIcon } from "../../components/SystemIcon";
+import { ScrollHero } from "../../components/ScrollHero";
+import { PhoneMockup, PhoneScreenSms, PhoneScreenTracking } from "../../components/PhoneMockup";
 
 const tryChips = [
   ["Orders board", "Order Management"],
@@ -92,6 +94,26 @@ export default function Home() {
               </span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Scroll-in dashboard + automatic SMS */}
+      <ScrollHero />
+
+      {/* Mobile mockups */}
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold text-brand-700">On your customers&rsquo; phones</p>
+          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight">They always know where their order is</h2>
+          <p className="mt-3 text-slate-600">No app to install. Every update and tracking link lands as a plain text message.</p>
+        </div>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-10 md:gap-16">
+          <PhoneMockup className="md:-rotate-3">
+            <PhoneScreenSms />
+          </PhoneMockup>
+          <PhoneMockup className="md:rotate-3">
+            <PhoneScreenTracking />
+          </PhoneMockup>
         </div>
       </section>
 
