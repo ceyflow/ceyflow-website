@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePackages } from "../../lib/publicData";
 import { SystemIcon } from "../../components/SystemIcon";
-import { ScrollHero } from "../../components/ScrollHero";
+import { OrderJourney } from "../../components/OrderJourney";
 import { PhoneMockup, PhoneScreenSms, PhoneScreenTracking } from "../../components/PhoneMockup";
 
 const tryChips = [
@@ -97,8 +97,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Scroll-in dashboard + automatic SMS */}
-      <ScrollHero />
+      {/* Order journey: scroll-scrubbed Received → Processing → Dispatching → Delivered */}
+      <OrderJourney />
 
       {/* Mobile mockups */}
       <section className="mx-auto max-w-6xl px-4 pb-16">
