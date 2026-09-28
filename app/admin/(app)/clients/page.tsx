@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getClients, getDocuments, type Client, type DocWithTotals } from "../../../../lib/adminData";
+import { getClients, getDocuments, deleteClient, type Client, type DocWithTotals } from "../../../../lib/adminData";
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -11,6 +11,16 @@ export default function ClientsPage() {
     getClients().then(setClients);
     getDocuments("invoice").then(setInvoices);
   }, []);
+
+  async function handleDelete(id: number, name: string) {
+    if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+    try {
+      await deleteClient(id);
+      setClients((cs) => cs.filter((c) => c.id !== id));
+    } catch {
+      alert("Couldn't delete this client — they have quotations or invoices. Remove those first.");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -23,7 +33,7 @@ export default function ClientsPage() {
           <p className="p-8 text-center text-sm text-slate-500">No clients yet. Add one, or convert a website inquiry.</p>
         ) : (
           <table className="table">
-            <thead><tr><th>Name</th><th>Company</th><th>Contact</th><th className="text-right">Outstanding</th></tr></thead>
+            <thead><tr><th>Name</th><th>Company</th><th>Contact</th><th className="text-right">Outstanding</th><th></th></tr></thead>
             <tbody>
               {clients.map((c) => {
                 const owed = invoices.filter((i) => i.client_id === c.id && i.status !== "void").reduce((a, i) => a + i.balance, 0);
@@ -34,6 +44,9 @@ export default function ClientsPage() {
                     <td className="text-slate-600">{c.email || c.phone}</td>
                     <td className={`text-right ${owed > 0 ? "font-medium text-amber-700" : "text-slate-400"}`}>
                       {owed > 0 ? owed.toLocaleString("en-LK", { minimumFractionDigits: 2 }) : "—"}
+                    </td>
+                    <td className="text-right">
+                      <button onClick={() => handleDelete(c.id, c.name)} className="text-slate-400 hover:text-red-600" aria-label={`Delete ${c.name}`}>✕</button>
                     </td>
                   </tr>
                 );

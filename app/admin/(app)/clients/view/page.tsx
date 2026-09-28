@@ -25,8 +25,12 @@ function ClientView() {
 
   async function handleDelete() {
     if (!confirm("Delete this client? This cannot be undone.")) return;
-    await deleteClient(client!.id);
-    router.push("/admin/clients");
+    try {
+      await deleteClient(client!.id);
+      router.push("/admin/clients");
+    } catch {
+      alert("Couldn't delete this client — they have quotations or invoices. Remove those first.");
+    }
   }
 
   return (
