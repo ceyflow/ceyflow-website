@@ -20,6 +20,11 @@ export function DocumentView({
   const cur = settings.currency || "LKR";
   const statuses = type === "quote" ? QUOTE_STATUSES : INVOICE_STATUSES;
   const label = type === "quote" ? "Quotation" : "Invoice";
+  const logoAlign = settings.invoice_logo_align === "right" || settings.invoice_logo_align === "center" ? settings.invoice_logo_align : "left";
+  const logoAlignClass = logoAlign === "center" ? "mx-auto" : logoAlign === "right" ? "ml-auto" : "";
+  const showNotes = settings.invoice_show_notes !== "false";
+  const showTerms = settings.invoice_show_terms !== "false";
+  const showPaymentDetails = settings.invoice_show_payment_details !== "false";
 
   return (
     <div className="space-y-6">
@@ -46,17 +51,23 @@ export function DocumentView({
       </div>
 
       <div className="print-sheet card mx-auto max-w-3xl p-8 md:p-12">
-        <div className="flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6">
-          <div>
+        <div
+          className={
+            logoAlign === "center"
+              ? "flex flex-col items-center gap-4 border-b border-slate-100 pb-6 text-center"
+              : `flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6 ${logoAlign === "right" ? "flex-row-reverse" : ""}`
+          }
+        >
+          <div className={logoAlign === "right" ? "text-right" : undefined}>
             {settings.logo_light_bg && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={settings.logo_light_bg} alt={settings.company_name || "Logo"} className="mb-2 h-10 w-auto object-contain" />
+              <img src={settings.logo_light_bg} alt={settings.company_name || "Logo"} className={`mb-2 h-10 w-auto object-contain ${logoAlignClass}`} />
             )}
             <p className="font-display text-xl font-extrabold text-brand-800">{settings.company_name}</p>
             <p className="mt-1 text-sm text-slate-500">{settings.company_address}</p>
             <p className="text-sm text-slate-500">{settings.company_email} · {settings.company_phone}</p>
           </div>
-          <div className="text-right">
+          <div className={logoAlign === "center" ? "" : logoAlign === "right" ? "text-left" : "text-right"}>
             <p className="font-display text-2xl font-bold uppercase tracking-wide text-slate-800">{label}</p>
             <p className="mt-1 text-sm text-slate-500">{doc.number}</p>
           </div>
@@ -104,14 +115,14 @@ export function DocumentView({
           )}
         </div>
 
-        {doc.notes && <p className="mt-8 text-sm text-slate-600">{doc.notes}</p>}
-        {doc.terms && (
+        {showNotes && doc.notes && <p className="mt-8 text-sm text-slate-600">{doc.notes}</p>}
+        {showTerms && doc.terms && (
           <div className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
             <p className="mb-1 font-semibold text-slate-600">Terms</p>
             <p className="whitespace-pre-line">{doc.terms}</p>
           </div>
         )}
-        {type === "invoice" && settings.bank_details && (
+        {type === "invoice" && showPaymentDetails && settings.bank_details && (
           <div className="mt-4 text-xs whitespace-pre-line text-slate-500">
             <p className="mb-1 font-semibold text-slate-600">Payment details</p>
             {settings.bank_details}
