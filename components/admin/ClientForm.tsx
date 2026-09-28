@@ -24,7 +24,7 @@ export function ClientForm({ client }: { client?: Client }) {
     });
     setPending(false);
     if (result.error) { setError(result.error); return; }
-    if (!client) router.push(`/admin/clients/${result.id}`);
+    if (!client) router.push(`/admin/clients/view?id=${result.id}`);
     else router.refresh();
   }
 
