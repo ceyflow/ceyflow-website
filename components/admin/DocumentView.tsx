@@ -48,6 +48,10 @@ export function DocumentView({
       <div className="print-sheet card mx-auto max-w-3xl p-8 md:p-12">
         <div className="flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6">
           <div>
+            {settings.logo_light_bg && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.logo_light_bg} alt={settings.company_name || "Logo"} className="mb-2 h-10 w-auto object-contain" />
+            )}
             <p className="font-display text-xl font-extrabold text-brand-800">{settings.company_name}</p>
             <p className="mt-1 text-sm text-slate-500">{settings.company_address}</p>
             <p className="text-sm text-slate-500">{settings.company_email} · {settings.company_phone}</p>
