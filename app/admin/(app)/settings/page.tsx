@@ -5,6 +5,7 @@ import { saveSettings, savePackagePricing, saveBundlePricing } from "../../../..
 import type { Package, Bundle, Settings } from "../../../../lib/publicData";
 import { PasswordForm } from "./PasswordForm";
 import { LogoCropModal } from "./LogoCropModal";
+import { InvoiceTemplatePreview, type InvoiceLogoAlign } from "./InvoiceTemplatePreview";
 
 type LogoKey = "logo_light_bg" | "logo_dark_bg";
 
@@ -16,6 +17,10 @@ export default function SettingsPage() {
   const [logoBusy, setLogoBusy] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<{ key: LogoKey; file: File } | null>(null);
+  const [invoiceAlign, setInvoiceAlign] = useState<InvoiceLogoAlign>("left");
+  const [invoiceShowNotes, setInvoiceShowNotes] = useState(true);
+  const [invoiceShowTerms, setInvoiceShowTerms] = useState(true);
+  const [invoiceShowPaymentDetails, setInvoiceShowPaymentDetails] = useState(true);
 
   async function refresh() {
     const [{ data: settingsRows }, { data: packageRows }, { data: bundleRows }] = await Promise.all([
@@ -28,6 +33,13 @@ export default function SettingsPage() {
     if (bundleRows) setBundles(bundleRows as Bundle[]);
   }
   useEffect(() => { refresh(); }, []);
+
+  useEffect(() => {
+    setInvoiceAlign(s.invoice_logo_align === "right" || s.invoice_logo_align === "center" ? s.invoice_logo_align : "left");
+    setInvoiceShowNotes(s.invoice_show_notes !== "false");
+    setInvoiceShowTerms(s.invoice_show_terms !== "false");
+    setInvoiceShowPaymentDetails(s.invoice_show_payment_details !== "false");
+  }, [s.invoice_logo_align, s.invoice_show_notes, s.invoice_show_terms, s.invoice_show_payment_details]);
 
   function flashSaved(what: string) {
     setSaved(what);
@@ -61,6 +73,17 @@ export default function SettingsPage() {
     await saveSettings({ [key]: "" });
     await refresh();
     setLogoBusy(null);
+  }
+
+  async function handleInvoiceTemplateSave() {
+    await saveSettings({
+      invoice_logo_align: invoiceAlign,
+      invoice_show_notes: String(invoiceShowNotes),
+      invoice_show_terms: String(invoiceShowTerms),
+      invoice_show_payment_details: String(invoiceShowPaymentDetails),
+    });
+    await refresh();
+    flashSaved("invoice-template");
   }
 
   async function handlePricing(e: React.FormEvent<HTMLFormElement>, kind: "package" | "bundle") {
@@ -133,6 +156,66 @@ export default function SettingsPage() {
           onSave={(dataUrl) => handleLogoCropSave(cropTarget.key, dataUrl)}
         />
       )}
+
+      <div className="card max-w-4xl space-y-5 p-6">
+        <div>
+          <p className="font-semibold">Invoice template</p>
+          <p className="text-sm text-slate-500">Controls how the logo, and which optional sections, appear on printed quotations and invoices.</p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-5">
+            <div>
+              <label className="label">Logo position</label>
+              <div className="flex gap-2">
+                {(["left", "center", "right"] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setInvoiceAlign(opt)}
+                    className={`btn-sm rounded-lg border px-3 py-1.5 text-sm capitalize ${
+                      invoiceAlign === opt ? "border-brand-600 bg-brand-50 text-brand-700" : "border-slate-300 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="label">Sections</label>
+              {([
+                { key: "notes" as const, label: "Notes", value: invoiceShowNotes, set: setInvoiceShowNotes },
+                { key: "terms" as const, label: "Terms", value: invoiceShowTerms, set: setInvoiceShowTerms },
+                { key: "payment" as const, label: "Payment details (invoices only)", value: invoiceShowPaymentDetails, set: setInvoiceShowPaymentDetails },
+              ]).map(({ key, label, value, set }) => (
+                <label key={key} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" checked={value} onChange={(e) => set(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <button type="button" onClick={handleInvoiceTemplateSave} className="btn-primary">
+              {saved === "invoice-template" ? "Saved ✓" : "Save template"}
+            </button>
+          </div>
+          <div>
+            <p className="label">Preview</p>
+            <InvoiceTemplatePreview
+              align={invoiceAlign}
+              showNotes={invoiceShowNotes}
+              showTerms={invoiceShowTerms}
+              showPaymentDetails={invoiceShowPaymentDetails}
+              logo={s.logo_light_bg}
+              companyName={s.company_name}
+              companyAddress={s.company_address}
+              companyEmail={s.company_email}
+              companyPhone={s.company_phone}
+              bankDetails={s.bank_details}
+              currency={s.currency}
+            />
+          </div>
+        </div>
+      </div>
 
       <form onSubmit={handleCompanyDetails} className="card max-w-2xl space-y-4 p-6">
         <p className="font-semibold">Company details (shown on the public site and on documents)</p>
