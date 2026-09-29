@@ -131,7 +131,7 @@ class MockQueryBuilder {
     if (this.table !== "documents" || !this.selectCols.includes("clients(")) return rows;
     return rows.map((r) => {
       const c = db.clients.find((cl) => cl.id === r.client_id);
-      return { ...r, client: c ? { name: c.name, company: c.company } : null };
+      return { ...r, client: c ? { name: c.name, company: c.company, phone: c.phone } : null };
     });
   }
 

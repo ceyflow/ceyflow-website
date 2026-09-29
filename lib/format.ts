@@ -26,3 +26,19 @@ export function addDays(iso: string, days: number) {
 
 export const QUOTE_STATUSES = ["draft", "sent", "accepted", "declined", "expired"] as const;
 export const INVOICE_STATUSES = ["draft", "sent", "partially paid", "paid", "void"] as const;
+
+export function isOverdue(doc: { type: string; status: string; due_date: string | null; balance: number }) {
+  if (doc.type !== "invoice") return false;
+  if (!doc.due_date) return false;
+  if (doc.status === "paid" || doc.status === "void") return false;
+  if (doc.balance <= 0) return false;
+  return doc.due_date < today();
+}
+
+export function displayStatus(doc: { type: string; status: string; due_date: string | null; balance: number }) {
+  return isOverdue(doc) ? "overdue" : doc.status;
+}
+
+export function digitsOnly(s: string) {
+  return s.replace(/[^\d]/g, "");
+}
