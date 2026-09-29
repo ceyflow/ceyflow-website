@@ -7,10 +7,12 @@ import {
 } from "../../../../../lib/adminData";
 import { useSettings } from "../../../../../lib/publicData";
 import { DocumentView } from "../../../../../components/admin/DocumentView";
+import { adminBase } from "../../../../../lib/adminBase";
 
 function QuoteView() {
   const id = Number(useSearchParams().get("id"));
   const router = useRouter();
+  const base = adminBase();
   const settings = useSettings();
   const [doc, setDoc] = useState<DocWithTotals | undefined | null>(null);
   const [items, setItems] = useState<DocItem[]>([]);
@@ -34,8 +36,8 @@ function QuoteView() {
     <DocumentView
       type="quote" doc={doc} items={items} client={client} settings={settings}
       onStatusChange={async (status) => { await setDocumentStatus(id, status); refresh(); }}
-      onConvert={async () => { const invoiceId = await convertQuoteToInvoice(id, settings); if (invoiceId) router.push(`/admin/invoices/view?id=${invoiceId}`); }}
-      onDelete={async () => { if (confirm("Delete this quotation? This cannot be undone.")) { await deleteDocument(id); router.push("/admin/quotes"); } }}
+      onConvert={async () => { const invoiceId = await convertQuoteToInvoice(id, settings); if (invoiceId) router.push(`${base}/invoices/view?id=${invoiceId}`); }}
+      onDelete={async () => { if (confirm("Delete this quotation? This cannot be undone.")) { await deleteDocument(id); router.push(`${base}/quotes`); } }}
     />
   );
 }

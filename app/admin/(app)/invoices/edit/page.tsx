@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getClients, getDocument, getItems, saveDocument, type Client, type DocItem, type DocWithTotals, type DocInput } from "../../../../../lib/adminData";
 import { useSettings } from "../../../../../lib/publicData";
 import { DocumentForm } from "../../../../../components/admin/DocumentForm";
+import { adminBase } from "../../../../../lib/adminBase";
 
 function EditInvoiceForm() {
   const id = Number(useSearchParams().get("id"));
@@ -24,7 +25,7 @@ function EditInvoiceForm() {
 
   async function handleSave(input: DocInput) {
     const result = await saveDocument("invoice", input, settings);
-    if (!result.error && result.id) router.push(`/admin/invoices/view?id=${result.id}`);
+    if (!result.error && result.id) router.push(`${adminBase()}/invoices/view?id=${result.id}`);
     return result;
   }
 

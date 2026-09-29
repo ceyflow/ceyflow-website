@@ -5,6 +5,7 @@ import { getClients, getDocuments, getInquiries, type Client, type DocWithTotals
 import { useSettings } from "../../../lib/publicData";
 import { money, date } from "../../../lib/format";
 import { Badge } from "../../../components/admin/Badge";
+import { adminBase } from "../../../lib/adminBase";
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -17,6 +18,7 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 export default function Dashboard() {
+  const base = adminBase();
   const s = useSettings();
   const cur = s.currency || "LKR";
   const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
@@ -45,8 +47,8 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">Dashboard</h1>
         <div className="flex gap-2">
-          <Link href="/admin/quotes/new" className="btn-secondary">New quotation</Link>
-          <Link href="/admin/invoices/new" className="btn-primary">New invoice</Link>
+          <Link href={`${base}/quotes/new`} className="btn-secondary">New quotation</Link>
+          <Link href={`${base}/invoices/new`} className="btn-primary">New invoice</Link>
         </div>
       </div>
 
@@ -61,7 +63,7 @@ export default function Dashboard() {
         <div className="card p-5 lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <p className="font-semibold">Recent documents</p>
-            <Link href="/admin/invoices" className="text-sm text-brand-700 hover:underline">View all</Link>
+            <Link href={`${base}/invoices`} className="text-sm text-brand-700 hover:underline">View all</Link>
           </div>
           {recentDocs.length === 0 ? (
             <p className="py-6 text-center text-sm text-slate-500">No quotations or invoices yet.</p>
@@ -71,7 +73,7 @@ export default function Dashboard() {
               <tbody>
                 {recentDocs.map((d) => (
                   <tr key={`${d.type}-${d.id}`}>
-                    <td><Link href={`/admin/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link></td>
+                    <td><Link href={`${base}/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link></td>
                     <td>{d.client_name}</td>
                     <td>{date(d.issue_date)}</td>
                     <td className="text-right">{money(d.total, cur)}</td>
@@ -85,7 +87,7 @@ export default function Dashboard() {
         <div className="card p-5">
           <div className="mb-3 flex items-center justify-between">
             <p className="font-semibold">Latest inquiries</p>
-            <Link href="/admin/inquiries" className="text-sm text-brand-700 hover:underline">View all</Link>
+            <Link href={`${base}/inquiries`} className="text-sm text-brand-700 hover:underline">View all</Link>
           </div>
           {inquiries.length === 0 ? (
             <p className="py-6 text-center text-sm text-slate-500">No inquiries yet.</p>

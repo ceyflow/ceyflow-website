@@ -5,8 +5,10 @@ import { getDocuments, type DocWithTotals } from "../../../../lib/adminData";
 import { useSettings } from "../../../../lib/publicData";
 import { Badge } from "../../../../components/admin/Badge";
 import { money, date } from "../../../../lib/format";
+import { adminBase } from "../../../../lib/adminBase";
 
 export default function InvoicesPage() {
+  const base = adminBase();
   const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
   const cur = useSettings().currency || "LKR";
 
@@ -16,7 +18,7 @@ export default function InvoicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Invoices</h1>
-        <Link href="/admin/invoices/new" className="btn-primary">New invoice</Link>
+        <Link href={`${base}/invoices/new`} className="btn-primary">New invoice</Link>
       </div>
       <div className="card overflow-x-auto">
         {invoices.length === 0 ? (
@@ -27,7 +29,7 @@ export default function InvoicesPage() {
             <tbody>
               {invoices.map((inv) => (
                 <tr key={inv.id}>
-                  <td><Link href={`/admin/invoices/view?id=${inv.id}`} className="font-medium text-brand-700 hover:underline">{inv.number}</Link></td>
+                  <td><Link href={`${base}/invoices/view?id=${inv.id}`} className="font-medium text-brand-700 hover:underline">{inv.number}</Link></td>
                   <td>{inv.client_name}</td>
                   <td>{date(inv.issue_date)}</td>
                   <td className="text-right">{money(inv.total, cur)}</td>

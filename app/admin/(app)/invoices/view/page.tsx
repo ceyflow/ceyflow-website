@@ -7,10 +7,12 @@ import {
 } from "../../../../../lib/adminData";
 import { useSettings } from "../../../../../lib/publicData";
 import { DocumentView } from "../../../../../components/admin/DocumentView";
+import { adminBase } from "../../../../../lib/adminBase";
 
 function InvoiceView() {
   const id = Number(useSearchParams().get("id"));
   const router = useRouter();
+  const base = adminBase();
   const settings = useSettings();
   const [doc, setDoc] = useState<DocWithTotals | undefined | null>(null);
   const [items, setItems] = useState<DocItem[]>([]);
@@ -36,7 +38,7 @@ function InvoiceView() {
     <DocumentView
       type="invoice" doc={doc} items={items} client={client} settings={settings} payments={payments}
       onStatusChange={async (status) => { await setDocumentStatus(id, status); refresh(); }}
-      onDelete={async () => { if (confirm("Delete this invoice? This cannot be undone.")) { await deleteDocument(id); router.push("/admin/invoices"); } }}
+      onDelete={async () => { if (confirm("Delete this invoice? This cannot be undone.")) { await deleteDocument(id); router.push(`${base}/invoices`); } }}
       onAddPayment={async (input) => { await addPayment(id, input); refresh(); }}
       onDeletePayment={async (paymentId) => { await deletePayment(id, paymentId); refresh(); }}
     />

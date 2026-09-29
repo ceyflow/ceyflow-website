@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveClient, type Client } from "../../lib/adminData";
+import { adminBase } from "../../lib/adminBase";
 
 export function ClientForm({ client }: { client?: Client }) {
   const [error, setError] = useState<string | undefined>();
@@ -24,7 +25,7 @@ export function ClientForm({ client }: { client?: Client }) {
     });
     setPending(false);
     if (result.error) { setError(result.error); return; }
-    if (!client) router.push(`/admin/clients/view?id=${result.id}`);
+    if (!client) router.push(`${adminBase()}/clients/view?id=${result.id}`);
     else router.refresh();
   }
 
