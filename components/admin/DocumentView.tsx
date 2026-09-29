@@ -2,11 +2,21 @@
 import Link from "next/link";
 import type { Client, DocItem, DocType, DocWithTotals, Payment } from "../../lib/adminData";
 import type { Settings } from "../../lib/publicData";
-import { money, date, QUOTE_STATUSES, INVOICE_STATUSES } from "../../lib/format";
+import { money, date, displayStatus, digitsOnly, QUOTE_STATUSES, INVOICE_STATUSES } from "../../lib/format";
 import { Badge } from "./Badge";
 import { PrintButton } from "./PrintButton";
 import { StatusSelect } from "./StatusSelect";
+import { StatusStepper } from "./StatusStepper";
 import { adminBase } from "../../lib/adminBase";
+
+function whatsAppShareHref(doc: DocWithTotals, client: Client, settings: Settings, label: string) {
+  const cur = settings.currency || "LKR";
+  const lines = [`${label} ${doc.number}`, `Client: ${client.name}`, `Total: ${money(doc.total, cur)}`];
+  if (doc.type === "invoice" && doc.balance > 0) lines.push(`Balance due: ${money(doc.balance, cur)}`);
+  if (settings.company_name) lines.push(`— ${settings.company_name}`);
+  const phone = client.phone ? digitsOnly(client.phone) : "";
+  return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
 
 export function DocumentView({
   type, doc, items, client, settings, payments, onStatusChange, onConvert, onDelete, onAddPayment, onDeletePayment,
@@ -27,28 +37,41 @@ export function DocumentView({
   const showTerms = settings.invoice_show_terms !== "false";
   const showPaymentDetails = settings.invoice_show_payment_details !== "false";
 
+  const showStepper = !["void", "declined", "expired"].includes(doc.status);
+
   return (
     <div className="space-y-6">
-      <div className="no-print flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link href={`${adminBase()}/${type}s`} className="text-slate-400 hover:text-slate-700">←</Link>
-          <h1 className="font-display text-2xl font-bold">{doc.number}</h1>
-          <Badge value={doc.status} />
+      <div className="no-print space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Link href={`${adminBase()}/${type}s`} className="text-slate-400 hover:text-slate-700">←</Link>
+            <h1 className="font-display text-2xl font-bold">{doc.number}</h1>
+            <Badge value={displayStatus(doc)} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <StatusSelect
+              action={(fd) => onStatusChange(String(fd.get("status")))}
+              defaultValue={doc.status}
+              options={statuses}
+              className="input py-1.5 text-sm capitalize"
+            />
+            {type === "quote" && doc.status !== "declined" && (
+              <button onClick={onConvert} className="btn-secondary">Convert to invoice</button>
+            )}
+            <Link href={`${adminBase()}/${type}s/edit?id=${doc.id}`} className="btn-secondary">Edit</Link>
+            <a
+              href={whatsAppShareHref(doc, client, settings, label)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              Share via WhatsApp
+            </a>
+            <PrintButton />
+            <button onClick={onDelete} className="btn-danger">Delete</button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <StatusSelect
-            action={(fd) => onStatusChange(String(fd.get("status")))}
-            defaultValue={doc.status}
-            options={statuses}
-            className="input py-1.5 text-sm capitalize"
-          />
-          {type === "quote" && doc.status !== "declined" && (
-            <button onClick={onConvert} className="btn-secondary">Convert to invoice</button>
-          )}
-          <Link href={`${adminBase()}/${type}s/edit?id=${doc.id}`} className="btn-secondary">Edit</Link>
-          <PrintButton />
-          <button onClick={onDelete} className="btn-danger">Delete</button>
-        </div>
+        {showStepper && <StatusStepper type={type} status={doc.status} />}
       </div>
 
       <div className="print-sheet card mx-auto max-w-3xl p-8 md:p-12">
@@ -137,12 +160,11 @@ export function DocumentView({
           {payments.length > 0 && (
             <ul className="mb-4 divide-y divide-slate-100 text-sm">
               {payments.map((p) => (
-                <li key={p.id} className="flex items-center justify-between py-2">
-                  <span>{date(p.date)} {p.method && `· ${p.method}`} {p.note && `· ${p.note}`}</span>
-                  <span className="flex items-center gap-3">
-                    <span className="font-medium">{money(p.amount, cur)}</span>
-                    <button onClick={() => onDeletePayment?.(p.id)} className="text-slate-400 hover:text-red-600" aria-label="Remove payment">✕</button>
+                <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <span className="rounded-lg bg-emerald-50 px-3 py-1.5 text-emerald-800">
+                    Received {money(p.amount, cur)} on {date(p.date)}{p.method && ` via ${p.method}`}{p.note && ` — ${p.note}`}
                   </span>
+                  <button onClick={() => onDeletePayment?.(p.id)} className="flex-none text-slate-400 hover:text-red-600" aria-label="Remove payment">✕</button>
                 </li>
               ))}
             </ul>

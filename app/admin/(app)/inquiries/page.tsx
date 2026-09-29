@@ -1,23 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getInquiries, setInquiryStatus, convertInquiry, type Inquiry } from "../../../../lib/adminData";
+import { convertInquiry, getInquiries, setInquiryStatus, type Inquiry } from "../../../../lib/adminData";
 import { Badge } from "../../../../components/admin/Badge";
 import { StatusSelect } from "../../../../components/admin/StatusSelect";
+import { StatusFilterPills } from "../../../../components/admin/StatusFilterPills";
 import { date } from "../../../../lib/format";
 import { adminBase } from "../../../../lib/adminBase";
 
 const statuses = ["new", "contacted", "converted", "closed"];
+const filters = ["all", ...statuses];
 
 export default function InquiriesPage() {
   const base = adminBase();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [filter, setFilter] = useState("all");
   const router = useRouter();
 
   function refresh() {
     getInquiries().then(setInquiries);
   }
   useEffect(refresh, []);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: inquiries.length };
+    for (const i of inquiries) c[i.status] = (c[i.status] || 0) + 1;
+    return c;
+  }, [inquiries]);
+
+  const filtered = filter === "all" ? inquiries : inquiries.filter((i) => i.status === filter);
+
+  async function handleConvertToQuotation(i: Inquiry) {
+    const clientId = i.client_id ?? (await convertInquiry(i.id));
+    if (clientId) router.push(`${base}/quotes/new?client=${clientId}`);
+  }
 
   return (
     <div className="space-y-6">
@@ -26,7 +42,8 @@ export default function InquiriesPage() {
         <div className="card p-8 text-center text-sm text-slate-500">No inquiries submitted yet.</div>
       ) : (
         <div className="space-y-4">
-          {inquiries.map((i) => (
+          <StatusFilterPills options={filters} active={filter} onChange={setFilter} counts={counts} />
+          {filtered.map((i) => (
             <div key={i.id} className="card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -52,6 +69,9 @@ export default function InquiriesPage() {
                         Convert to client
                       </button>
                     )}
+                    <button onClick={() => handleConvertToQuotation(i)} className="btn-primary btn-sm">
+                      Convert to quotation
+                    </button>
                   </div>
                 </div>
               </div>

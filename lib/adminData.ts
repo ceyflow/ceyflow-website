@@ -21,7 +21,7 @@ export type Doc = {
   source_id: number | null; created_at: string; updated_at: string;
 };
 export type DocWithTotals = Doc & {
-  client_name: string; client_company: string; subtotal: number; total: number; paid: number; balance: number;
+  client_name: string; client_company: string; client_phone: string; subtotal: number; total: number; paid: number; balance: number;
 };
 export type Payment = { id: number; document_id: number; amount: number; date: string; method: string; note: string };
 
@@ -33,7 +33,7 @@ export function totals(items: { qty: number; unit_price: number }[], discount: n
 }
 
 function withTotals(
-  d: Doc & { client: { name: string; company: string } | null },
+  d: Doc & { client: { name: string; company: string; phone: string } | null },
   items: (DocItem & { document_id: number })[],
   payments: { document_id: number; amount: number }[]
 ): DocWithTotals {
@@ -41,7 +41,10 @@ function withTotals(
   const t = totals(myItems, d.discount, d.tax_rate);
   const paid = payments.filter((p) => p.document_id === d.id).reduce((s, p) => s + p.amount, 0);
   const { client, ...rest } = d;
-  return { ...rest, client_name: client?.name || "", client_company: client?.company || "", subtotal: t.subtotal, total: t.total, paid, balance: t.total - paid };
+  return {
+    ...rest, client_name: client?.name || "", client_company: client?.company || "", client_phone: client?.phone || "",
+    subtotal: t.subtotal, total: t.total, paid, balance: t.total - paid,
+  };
 }
 
 /* ---------- clients ---------- */
@@ -123,7 +126,7 @@ export async function getPayments(docId: number): Promise<Payment[]> {
   return data as Payment[];
 }
 export async function getDocuments(type?: DocType, clientId?: number): Promise<DocWithTotals[]> {
-  let q = supabase.from("documents").select("*, client:clients(name, company)").order("issue_date", { ascending: false }).order("id", { ascending: false });
+  let q = supabase.from("documents").select("*, client:clients(name, company, phone)").order("issue_date", { ascending: false }).order("id", { ascending: false });
   if (type) q = q.eq("type", type);
   if (clientId) q = q.eq("client_id", clientId);
   const { data: docs, error } = await q;
@@ -137,7 +140,7 @@ export async function getDocuments(type?: DocType, clientId?: number): Promise<D
   return (docs as any[]).map((d) => withTotals(d, (items as any[]) || [], (payments as any[]) || []));
 }
 export async function getDocument(id: number): Promise<DocWithTotals | undefined> {
-  const { data: d } = await supabase.from("documents").select("*, client:clients(name, company)").eq("id", id).maybeSingle();
+  const { data: d } = await supabase.from("documents").select("*, client:clients(name, company, phone)").eq("id", id).maybeSingle();
   if (!d) return undefined;
   const [items, payments] = await Promise.all([getItems(id), getPayments(id)]);
   return withTotals(d as any, items.map((i) => ({ ...i, document_id: id })), payments.map((p) => ({ document_id: id, amount: p.amount })));
