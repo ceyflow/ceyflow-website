@@ -5,10 +5,12 @@ import { getInquiries, setInquiryStatus, convertInquiry, type Inquiry } from "..
 import { Badge } from "../../../../components/admin/Badge";
 import { StatusSelect } from "../../../../components/admin/StatusSelect";
 import { date } from "../../../../lib/format";
+import { adminBase } from "../../../../lib/adminBase";
 
 const statuses = ["new", "contacted", "converted", "closed"];
 
 export default function InquiriesPage() {
+  const base = adminBase();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const router = useRouter();
 
@@ -44,7 +46,7 @@ export default function InquiriesPage() {
                     />
                     {!i.client_id && (
                       <button
-                        onClick={async () => { const clientId = await convertInquiry(i.id); if (clientId) router.push(`/admin/clients/view?id=${clientId}`); }}
+                        onClick={async () => { const clientId = await convertInquiry(i.id); if (clientId) router.push(`${base}/clients/view?id=${clientId}`); }}
                         className="btn-secondary btn-sm"
                       >
                         Convert to client

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getClients, saveDocument, type Client, type DocInput } from "../../../../../lib/adminData";
 import { useSettings } from "../../../../../lib/publicData";
 import { DocumentForm } from "../../../../../components/admin/DocumentForm";
+import { adminBase } from "../../../../../lib/adminBase";
 
 function NewQuoteForm() {
   const clientParam = useSearchParams().get("client");
@@ -15,7 +16,7 @@ function NewQuoteForm() {
 
   async function handleSave(input: DocInput) {
     const result = await saveDocument("quote", input, settings);
-    if (!result.error && result.id) router.push(`/admin/quotes/view?id=${result.id}`);
+    if (!result.error && result.id) router.push(`${adminBase()}/quotes/view?id=${result.id}`);
     return result;
   }
 

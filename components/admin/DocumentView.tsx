@@ -6,6 +6,7 @@ import { money, date, QUOTE_STATUSES, INVOICE_STATUSES } from "../../lib/format"
 import { Badge } from "./Badge";
 import { PrintButton } from "./PrintButton";
 import { StatusSelect } from "./StatusSelect";
+import { adminBase } from "../../lib/adminBase";
 
 export function DocumentView({
   type, doc, items, client, settings, payments, onStatusChange, onConvert, onDelete, onAddPayment, onDeletePayment,
@@ -30,7 +31,7 @@ export function DocumentView({
     <div className="space-y-6">
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href={`/admin/${type}s`} className="text-slate-400 hover:text-slate-700">←</Link>
+          <Link href={`${adminBase()}/${type}s`} className="text-slate-400 hover:text-slate-700">←</Link>
           <h1 className="font-display text-2xl font-bold">{doc.number}</h1>
           <Badge value={doc.status} />
         </div>
@@ -44,7 +45,7 @@ export function DocumentView({
           {type === "quote" && doc.status !== "declined" && (
             <button onClick={onConvert} className="btn-secondary">Convert to invoice</button>
           )}
-          <Link href={`/admin/${type}s/edit?id=${doc.id}`} className="btn-secondary">Edit</Link>
+          <Link href={`${adminBase()}/${type}s/edit?id=${doc.id}`} className="btn-secondary">Edit</Link>
           <PrintButton />
           <button onClick={onDelete} className="btn-danger">Delete</button>
         </div>

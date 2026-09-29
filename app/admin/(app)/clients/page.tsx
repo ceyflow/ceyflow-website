@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getClients, getDocuments, deleteClient, type Client, type DocWithTotals } from "../../../../lib/adminData";
+import { adminBase } from "../../../../lib/adminBase";
 
 export default function ClientsPage() {
+  const base = adminBase();
   const [clients, setClients] = useState<Client[]>([]);
   const [invoices, setInvoices] = useState<DocWithTotals[]>([]);
 
@@ -26,7 +28,7 @@ export default function ClientsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Clients</h1>
-        <Link href="/admin/clients/new" className="btn-primary">New client</Link>
+        <Link href={`${base}/clients/new`} className="btn-primary">New client</Link>
       </div>
       <div className="card overflow-x-auto">
         {clients.length === 0 ? (
@@ -39,7 +41,7 @@ export default function ClientsPage() {
                 const owed = invoices.filter((i) => i.client_id === c.id && i.status !== "void").reduce((a, i) => a + i.balance, 0);
                 return (
                   <tr key={c.id}>
-                    <td><Link href={`/admin/clients/view?id=${c.id}`} className="font-medium text-brand-700 hover:underline">{c.name}</Link></td>
+                    <td><Link href={`${base}/clients/view?id=${c.id}`} className="font-medium text-brand-700 hover:underline">{c.name}</Link></td>
                     <td className="text-slate-600">{c.company}</td>
                     <td className="text-slate-600">{c.email || c.phone}</td>
                     <td className={`text-right ${owed > 0 ? "font-medium text-amber-700" : "text-slate-400"}`}>

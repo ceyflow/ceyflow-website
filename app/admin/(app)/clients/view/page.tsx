@@ -6,8 +6,10 @@ import { getClient, getDocuments, deleteClient, type Client, type DocWithTotals 
 import { ClientForm } from "../../../../../components/admin/ClientForm";
 import { Badge } from "../../../../../components/admin/Badge";
 import { money, date } from "../../../../../lib/format";
+import { adminBase } from "../../../../../lib/adminBase";
 
 function ClientView() {
+  const base = adminBase();
   const id = Number(useSearchParams().get("id"));
   const router = useRouter();
   const [client, setClient] = useState<Client | undefined | null>(null);
@@ -27,7 +29,7 @@ function ClientView() {
     if (!confirm("Delete this client? This cannot be undone.")) return;
     try {
       await deleteClient(client!.id);
-      router.push("/admin/clients");
+      router.push(`${base}/clients`);
     } catch {
       alert("Couldn't delete this client — they have quotations or invoices. Remove those first.");
     }
@@ -45,8 +47,8 @@ function ClientView() {
           <div className="mb-3 flex items-center justify-between">
             <p className="font-semibold">Quotations & invoices</p>
             <div className="flex gap-2">
-              <Link href={`/admin/quotes/new?client=${client.id}`} className="btn-secondary btn-sm">New quote</Link>
-              <Link href={`/admin/invoices/new?client=${client.id}`} className="btn-primary btn-sm">New invoice</Link>
+              <Link href={`${base}/quotes/new?client=${client.id}`} className="btn-secondary btn-sm">New quote</Link>
+              <Link href={`${base}/invoices/new?client=${client.id}`} className="btn-primary btn-sm">New invoice</Link>
             </div>
           </div>
           {docs.length === 0 ? (
@@ -56,7 +58,7 @@ function ClientView() {
               {docs.map((d) => (
                 <li key={`${d.type}-${d.id}`} className="flex items-center justify-between py-2.5 text-sm">
                   <div>
-                    <Link href={`/admin/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link>
+                    <Link href={`${base}/${d.type}s/view?id=${d.id}`} className="font-medium text-brand-700 hover:underline">{d.number}</Link>
                     <span className="ml-2 text-xs text-slate-500 capitalize">{d.type}</span>
                     <p className="text-xs text-slate-500">{date(d.issue_date)}</p>
                   </div>
