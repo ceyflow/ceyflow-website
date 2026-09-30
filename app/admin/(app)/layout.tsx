@@ -55,8 +55,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="border-t border-slate-100 p-4">
           <p className="truncate text-sm font-medium text-slate-700">{name}</p>
           <p className="truncate text-xs text-slate-500">{session.user.email}</p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
             <Link href="/" className="text-xs font-medium text-slate-500 hover:text-slate-800">View site</Link>
+            <Link href="/showcase" target="_blank" rel="noreferrer" className="text-xs font-medium text-slate-500 hover:text-slate-800">Product demo ↗</Link>
             <button onClick={handleSignOut} className="ml-auto text-xs font-medium text-red-600 hover:text-red-700">Sign out</button>
           </div>
         </div>
@@ -70,8 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         base="/admin"
         badgeCounts={badgeCounts}
         footer={
-          <div className="flex items-center justify-between px-1">
-            <Link href="/" className="text-sm font-medium text-slate-500">View site</Link>
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex gap-3">
+              <Link href="/" className="text-sm font-medium text-slate-500">View site</Link>
+              <Link href="/showcase" target="_blank" rel="noreferrer" className="text-sm font-medium text-slate-500">Demo ↗</Link>
+            </div>
             <button onClick={handleSignOut} className="text-sm font-medium text-red-600">Sign out</button>
           </div>
         }
