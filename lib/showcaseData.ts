@@ -29,6 +29,15 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
   High: "bg-rose-100 text-rose-700",
 };
 
+export type TeamNote = { id: number; author: string; text: string; at: string };
+
+export const CHECKLIST_LABELS = [
+  "Items picked & counted",
+  "Quality checked",
+  "Packed securely",
+  "Invoice printed & attached",
+] as const;
+
 export type ShowcaseOrder = {
   id: number;
   orderNumber: string;
@@ -44,6 +53,8 @@ export type ShowcaseOrder = {
   history: { stage: OrderStage; at: string }[];
   notes: string;
   rating: number | null;
+  checklist: boolean[];
+  teamNotes: TeamNote[];
 };
 
 export type ShowcaseCustomer = {
@@ -52,6 +63,34 @@ export type ShowcaseCustomer = {
   phone: string;
   city: string;
   totalOrders: number;
+};
+
+export type StaffMember = { id: number; name: string; role: "Admin" | "Packer" | "Dispatcher" };
+
+export const STAFF_MEMBERS: StaffMember[] = [
+  { id: 1, name: "You (Owner)", role: "Admin" },
+  { id: 2, name: "Priya", role: "Packer" },
+  { id: 3, name: "Dinesh", role: "Dispatcher" },
+];
+
+export type ComplaintStatus = "Open" | "In progress" | "Resolved";
+
+export const COMPLAINT_STATUS_COLORS: Record<ComplaintStatus, string> = {
+  Open: "bg-rose-100 text-rose-700",
+  "In progress": "bg-amber-100 text-amber-700",
+  Resolved: "bg-emerald-100 text-emerald-700",
+};
+
+export type ShowcaseComplaint = {
+  id: number;
+  orderNumber: string | null;
+  customerName: string;
+  phone: string;
+  subject: string;
+  details: string;
+  status: ComplaintStatus;
+  createdAt: string;
+  resolution: string | null;
 };
 
 export const COURIER_NAME = "Zipline Express";
@@ -79,6 +118,11 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(2), notes: "Customer asked for delivery after 5pm.",
     history: [{ stage: 0, at: daysAgo(2) }, { stage: 1, at: daysAgo(2) }, { stage: 2, at: daysAgo(1) }, { stage: 3, at: daysAgo(0) }],
     rating: 5,
+    checklist: [true, true, true, true],
+    teamNotes: [
+      { id: 1, author: "Priya", text: "Customer requested gift wrap — added.", at: daysAgo(2) },
+      { id: 2, author: "Dinesh", text: "Left with security guard, 5:40pm per instructions.", at: daysAgo(0) },
+    ],
   },
   {
     id: 2, orderNumber: "LT-1043", customerName: "Ruwan Perera", phone: "077 218 5563", address: "112 Peradeniya Rd, Kandy",
@@ -86,6 +130,8 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(1), notes: "",
     history: [{ stage: 0, at: daysAgo(1) }, { stage: 1, at: daysAgo(1) }, { stage: 2, at: daysAgo(0) }],
     rating: null,
+    checklist: [true, true, true, false],
+    teamNotes: [{ id: 1, author: "Priya", text: "One plate had a hairline chip — swapped before packing.", at: daysAgo(0) }],
   },
   {
     id: 3, orderNumber: "LT-1044", customerName: "Sanduni Jayasuriya", phone: "070 655 3341", address: "9 Church St, Galle Fort",
@@ -93,6 +139,8 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(1), notes: "Repeat customer — 6th order.",
     history: [{ stage: 0, at: daysAgo(1) }, { stage: 1, at: daysAgo(0) }],
     rating: null,
+    checklist: [true, false, false, false],
+    teamNotes: [],
   },
   {
     id: 4, orderNumber: "LT-1045", customerName: "Amal Wickramasinghe", phone: "076 903 7724", address: "56 Havelock Rd, Colombo 5",
@@ -100,6 +148,8 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(0), notes: "",
     history: [{ stage: 0, at: daysAgo(0) }],
     rating: null,
+    checklist: [false, false, false, false],
+    teamNotes: [],
   },
   {
     id: 5, orderNumber: "LT-1046", customerName: "Tharindu Gunawardena", phone: "071 320 8856", address: "3rd Lane, Negombo",
@@ -107,6 +157,8 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(0), notes: "Birthday gift — needs to arrive by Friday.",
     history: [{ stage: 0, at: daysAgo(0) }],
     rating: null,
+    checklist: [false, false, false, false],
+    teamNotes: [{ id: 1, author: "You (Owner)", text: "Priority — birthday gift, must ship today.", at: daysAgo(0) }],
   },
   {
     id: 6, orderNumber: "LT-1041", customerName: "Malithi Silva", phone: "077 561 0942", address: "Dambulla Rd, Kurunegala",
@@ -114,6 +166,8 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(4), notes: "",
     history: [{ stage: 0, at: daysAgo(4) }, { stage: 1, at: daysAgo(4) }, { stage: 2, at: daysAgo(3) }, { stage: 3, at: daysAgo(2) }],
     rating: 4,
+    checklist: [true, true, true, true],
+    teamNotes: [],
   },
   {
     id: 7, orderNumber: "LT-1040", customerName: "Sanduni Jayasuriya", phone: "070 655 3341", address: "9 Church St, Galle Fort",
@@ -121,15 +175,37 @@ const SEED_ORDERS: ShowcaseOrder[] = [
     createdAt: daysAgo(5), notes: "",
     history: [{ stage: 0, at: daysAgo(5) }, { stage: 1, at: daysAgo(5) }, { stage: 2, at: daysAgo(4) }, { stage: 3, at: daysAgo(3) }],
     rating: null,
+    checklist: [true, true, true, true],
+    teamNotes: [],
+  },
+];
+
+const SEED_COMPLAINTS: ShowcaseComplaint[] = [
+  {
+    id: 1, orderNumber: "LT-1040", customerName: "Sanduni Jayasuriya", phone: "070 655 3341",
+    subject: "One plate arrived with a small chip", details: "Customer says a chip was noticed on unboxing, sent a photo over SMS.",
+    status: "In progress", createdAt: daysAgo(2), resolution: null,
+  },
+  {
+    id: 2, orderNumber: "LT-1041", customerName: "Malithi Silva", phone: "077 561 0942",
+    subject: "Delivery later than the time window given", details: "Expected before 2pm, arrived around 4:30pm — no SMS update in between.",
+    status: "Resolved", createdAt: daysAgo(3), resolution: "Apologized, offered 10% off next order. Customer was understanding.",
+  },
+  {
+    id: 3, orderNumber: null, customerName: "Kasun Rathnayake", phone: "071 884 2210",
+    subject: "Asking if cash on delivery is available", details: "Not an existing order — a general question via the contact number.",
+    status: "Open", createdAt: daysAgo(0), resolution: null,
   },
 ];
 
 type Listener = () => void;
 
 class ShowcaseStore {
-  private orders: ShowcaseOrder[] = SEED_ORDERS.map((o) => ({ ...o, history: [...o.history] }));
+  private orders: ShowcaseOrder[] = SEED_ORDERS.map((o) => ({ ...o, history: [...o.history], checklist: [...o.checklist], teamNotes: [...o.teamNotes] }));
+  private complaints: ShowcaseComplaint[] = SEED_COMPLAINTS.map((c) => ({ ...c }));
   private listeners = new Set<Listener>();
   private nextId = SEED_ORDERS.length + 1;
+  private nextComplaintId = SEED_COMPLAINTS.length + 1;
 
   private emit() {
     this.listeners.forEach((l) => l());
@@ -184,6 +260,8 @@ class ShowcaseStore {
       createdAt: new Date().toISOString(),
       history: [{ stage: 0, at: new Date().toISOString() }],
       rating: null,
+      checklist: CHECKLIST_LABELS.map(() => false),
+      teamNotes: [],
       ...input,
     };
     this.orders = [order, ...this.orders];
@@ -191,7 +269,48 @@ class ShowcaseStore {
     return order;
   };
 
+  toggleChecklistItem = (orderId: number, index: number) => {
+    const order = this.orders.find((o) => o.id === orderId);
+    if (!order) return;
+    order.checklist = order.checklist.map((v, i) => (i === index ? !v : v));
+    this.orders = [...this.orders];
+    this.emit();
+  };
+
+  addTeamNote = (orderId: number, author: string, text: string) => {
+    const order = this.orders.find((o) => o.id === orderId);
+    if (!order || !text.trim()) return;
+    const nextNoteId = (order.teamNotes[order.teamNotes.length - 1]?.id || 0) + 1;
+    order.teamNotes = [...order.teamNotes, { id: nextNoteId, author, text: text.trim(), at: new Date().toISOString() }];
+    this.orders = [...this.orders];
+    this.emit();
+  };
+
   getCustomers = (): ShowcaseCustomer[] => SEED_CUSTOMERS;
+
+  getComplaints = (): ShowcaseComplaint[] => this.complaints;
+
+  setComplaintStatus = (id: number, status: ComplaintStatus, resolution?: string) => {
+    const complaint = this.complaints.find((c) => c.id === id);
+    if (!complaint) return;
+    complaint.status = status;
+    if (resolution !== undefined) complaint.resolution = resolution;
+    this.complaints = [...this.complaints];
+    this.emit();
+  };
+
+  addComplaint = (input: Pick<ShowcaseComplaint, "customerName" | "phone" | "subject" | "details" | "orderNumber">) => {
+    const complaint: ShowcaseComplaint = {
+      id: this.nextComplaintId++,
+      status: "Open",
+      createdAt: new Date().toISOString(),
+      resolution: null,
+      ...input,
+    };
+    this.complaints = [complaint, ...this.complaints];
+    this.emit();
+    return complaint;
+  };
 }
 
 export const showcaseStore = new ShowcaseStore();
