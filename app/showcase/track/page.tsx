@@ -1,6 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BUSINESS_NAME, showcaseStore, type ShowcaseOrder } from "@/lib/showcaseData";
 import { StagePill } from "@/components/showcase/Pills";
 import { DeliveryTracker, CourierTimeline, StarRating } from "@/components/showcase/DeliveryTracker";
@@ -8,9 +7,19 @@ import { useShowcaseOrders } from "@/lib/useShowcaseOrders";
 
 function TrackContent() {
   const orders = useShowcaseOrders();
-  const params = useSearchParams();
-  const [query, setQuery] = useState(params.get("order") || "");
-  const [searched, setSearched] = useState(!!params.get("order"));
+  const [query, setQuery] = useState("");
+  const [searched, setSearched] = useState(false);
+
+  // Static export can't read the query string on the server, so pick up a
+  // ?order= deep link from the browser after mount instead of useSearchParams
+  // (which forces this whole page into client-only rendering under `output: export`).
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("order");
+    if (fromUrl) {
+      setQuery(fromUrl);
+      setSearched(true);
+    }
+  }, []);
 
   const order: ShowcaseOrder | undefined = searched ? showcaseStore.findByNumberOrPhone(query) || orders.find((o) => o.orderNumber === query) : undefined;
 
@@ -82,9 +91,7 @@ function TrackContent() {
 export default function ShowcaseTrackPage() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <Suspense>
-        <TrackContent />
-      </Suspense>
+      <TrackContent />
     </div>
   );
 }
