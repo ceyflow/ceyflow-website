@@ -96,9 +96,50 @@ export type ShowcaseComplaint = {
 export const COURIER_NAME = "Zipline Express";
 export const BUSINESS_NAME = "Lakview Traders";
 
+export type BatchStage = 0 | 1 | 2 | 3;
+
+export const BATCH_STAGES: { key: BatchStage; label: string }[] = [
+  { key: 0, label: "Gathering components" },
+  { key: 1, label: "Assembling" },
+  { key: 2, label: "Hygiene & quality check" },
+  { key: 3, label: "Ready for dispatch" },
+];
+
+export const BATCH_STAGE_COLORS: Record<BatchStage, { text: string; bg: string; dot: string }> = {
+  0: { text: "text-slate-600", bg: "bg-slate-100", dot: "bg-slate-400" },
+  1: { text: "text-amber-700", bg: "bg-amber-100", dot: "bg-amber-500" },
+  2: { text: "text-violet-700", bg: "bg-violet-100", dot: "bg-violet-500" },
+  3: { text: "text-emerald-700", bg: "bg-emerald-100", dot: "bg-emerald-500" },
+};
+
+export const HYGIENE_CHECKLIST_LABELS = [
+  "Workstation & hands sanitized",
+  "Components checked (no damage, in date)",
+  "Assembled to spec",
+  "Final wipe-down & sealed for dispatch",
+] as const;
+
+export type ProductionBatch = {
+  id: number;
+  batchNumber: string;
+  item: string;
+  qty: number;
+  stage: BatchStage;
+  startedAt: string;
+  stageStartedAt: string;
+  checklist: boolean[];
+  notes: string;
+};
+
 function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
+  return d.toISOString();
+}
+
+function hoursAgo(n: number): string {
+  const d = new Date();
+  d.setHours(d.getHours() - n);
   return d.toISOString();
 }
 
@@ -198,14 +239,50 @@ const SEED_COMPLAINTS: ShowcaseComplaint[] = [
   },
 ];
 
+const SEED_BATCHES: ProductionBatch[] = [
+  {
+    id: 1, batchNumber: "B-204", item: "Gift hamper — Classic (large)", qty: 6, stage: 1,
+    startedAt: hoursAgo(3), stageStartedAt: hoursAgo(1),
+    checklist: [true, true, false, false], notes: "Restock for this week's hamper orders.",
+  },
+  {
+    id: 2, batchNumber: "B-203", item: "Gift hamper — Deluxe", qty: 4, stage: 2,
+    startedAt: hoursAgo(6), stageStartedAt: hoursAgo(0.5),
+    checklist: [true, true, true, false], notes: "",
+  },
+  {
+    id: 3, batchNumber: "B-202", item: "Gift hamper — Classic (large)", qty: 10, stage: 3,
+    startedAt: daysAgo(1), stageStartedAt: hoursAgo(4),
+    checklist: [true, true, true, true], notes: "Sealed and shelved.",
+  },
+  {
+    id: 4, batchNumber: "B-205", item: "Gift hamper — Deluxe", qty: 5, stage: 0,
+    startedAt: hoursAgo(0.25), stageStartedAt: hoursAgo(0.25),
+    checklist: [false, false, false, false], notes: "Waiting on ceramic mugs from supplier.",
+  },
+];
+
+export type TeamChatMessage = { id: number; author: string; text: string; at: string };
+
+const SEED_CHAT: TeamChatMessage[] = [
+  { id: 1, author: "You (Owner)", text: "Morning all — LT-1046 is a birthday gift, needs to ship today.", at: hoursAgo(5) },
+  { id: 2, author: "Priya", text: "On it. Starting B-204 now for the hamper restock too.", at: hoursAgo(4) },
+  { id: 3, author: "Dinesh", text: "Zipline pickup is at 4pm today, one run only.", at: hoursAgo(2) },
+];
+
 type Listener = () => void;
 
 class ShowcaseStore {
   private orders: ShowcaseOrder[] = SEED_ORDERS.map((o) => ({ ...o, history: [...o.history], checklist: [...o.checklist], teamNotes: [...o.teamNotes] }));
   private complaints: ShowcaseComplaint[] = SEED_COMPLAINTS.map((c) => ({ ...c }));
+  private batches: ProductionBatch[] = SEED_BATCHES.map((b) => ({ ...b, checklist: [...b.checklist] }));
+  private staffDirectory: StaffMember[] = STAFF_MEMBERS.map((s) => ({ ...s }));
+  private chatMessages: TeamChatMessage[] = SEED_CHAT.map((m) => ({ ...m }));
   private listeners = new Set<Listener>();
   private nextId = SEED_ORDERS.length + 1;
   private nextComplaintId = SEED_COMPLAINTS.length + 1;
+  private nextBatchId = SEED_BATCHES.length + 1;
+  private nextStaffId = STAFF_MEMBERS.length + 1;
 
   private emit() {
     this.listeners.forEach((l) => l());
@@ -310,6 +387,60 @@ class ShowcaseStore {
     this.complaints = [complaint, ...this.complaints];
     this.emit();
     return complaint;
+  };
+
+  getBatches = (): ProductionBatch[] => this.batches;
+
+  advanceBatch = (id: number) => {
+    const batch = this.batches.find((b) => b.id === id);
+    if (!batch || batch.stage >= 3) return;
+    batch.stage = (batch.stage + 1) as BatchStage;
+    batch.stageStartedAt = new Date().toISOString();
+    this.batches = [...this.batches];
+    this.emit();
+  };
+
+  toggleBatchChecklistItem = (id: number, index: number) => {
+    const batch = this.batches.find((b) => b.id === id);
+    if (!batch) return;
+    batch.checklist = batch.checklist.map((v, i) => (i === index ? !v : v));
+    this.batches = [...this.batches];
+    this.emit();
+  };
+
+  addBatch = (input: Pick<ProductionBatch, "item" | "qty" | "notes">) => {
+    const now = new Date().toISOString();
+    const batch: ProductionBatch = {
+      id: this.nextBatchId,
+      batchNumber: "B-" + (205 + this.nextBatchId++),
+      stage: 0,
+      startedAt: now,
+      stageStartedAt: now,
+      checklist: HYGIENE_CHECKLIST_LABELS.map(() => false),
+      ...input,
+    };
+    this.batches = [batch, ...this.batches];
+    this.emit();
+    return batch;
+  };
+
+  getStaffDirectory = (): StaffMember[] => this.staffDirectory;
+
+  addStaffMember = (name: string, role: StaffMember["role"]) => {
+    if (!name.trim()) return;
+    const member: StaffMember = { id: this.nextStaffId++, name: name.trim(), role };
+    this.staffDirectory = [...this.staffDirectory, member];
+    this.emit();
+    return member;
+  };
+
+  getChatMessages = (): TeamChatMessage[] => this.chatMessages;
+
+  sendChatMessage = (author: string, text: string) => {
+    if (!text.trim()) return;
+    const nextChatId = (this.chatMessages[this.chatMessages.length - 1]?.id || 0) + 1;
+    this.chatMessages = [...this.chatMessages, { id: nextChatId, author, text: text.trim(), at: new Date().toISOString() }];
+    this.emit();
   };
 }
 
