@@ -1,8 +1,9 @@
 "use client";
-import { STAFF_MEMBERS } from "@/lib/showcaseData";
+import { useShowcaseStaffDirectory } from "@/lib/useShowcaseOrders";
 import { useShowcaseStaff } from "@/lib/showcaseStaffContext";
 
 export function StaffSwitcher({ className = "" }: { className?: string }) {
+  const directory = useShowcaseStaffDirectory();
   const { staff, setStaff } = useShowcaseStaff();
 
   return (
@@ -11,12 +12,12 @@ export function StaffSwitcher({ className = "" }: { className?: string }) {
       <select
         value={staff.id}
         onChange={(e) => {
-          const next = STAFF_MEMBERS.find((s) => s.id === Number(e.target.value));
+          const next = directory.find((s) => s.id === Number(e.target.value));
           if (next) setStaff(next);
         }}
         className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 outline-none focus:border-indigo-400"
       >
-        {STAFF_MEMBERS.map((s) => (
+        {directory.map((s) => (
           <option key={s.id} value={s.id}>{s.name} — {s.role}</option>
         ))}
       </select>

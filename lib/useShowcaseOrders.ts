@@ -9,3 +9,15 @@ export function useShowcaseOrders() {
 export function useShowcaseComplaints() {
   return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getComplaints, showcaseStore.getComplaints);
 }
+
+export function useShowcaseBatches() {
+  return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getBatches, showcaseStore.getBatches);
+}
+
+export function useShowcaseChat() {
+  return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getChatMessages, showcaseStore.getChatMessages);
+}
+
+export function useShowcaseStaffDirectory() {
+  return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getStaffDirectory, showcaseStore.getStaffDirectory);
+}
