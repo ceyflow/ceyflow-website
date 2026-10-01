@@ -69,8 +69,6 @@ export type StaffMember = { id: number; name: string; role: "Admin" | "Packer" |
 
 export const STAFF_MEMBERS: StaffMember[] = [
   { id: 1, name: "You (Owner)", role: "Admin" },
-  { id: 2, name: "Priya", role: "Packer" },
-  { id: 3, name: "Dinesh", role: "Dispatcher" },
 ];
 
 export type ComplaintStatus = "Open" | "In progress" | "Resolved";
@@ -131,144 +129,17 @@ export type ProductionBatch = {
   notes: string;
 };
 
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString();
-}
+const SEED_CUSTOMERS: ShowcaseCustomer[] = [];
 
-function hoursAgo(n: number): string {
-  const d = new Date();
-  d.setHours(d.getHours() - n);
-  return d.toISOString();
-}
+const SEED_ORDERS: ShowcaseOrder[] = [];
 
-const SEED_CUSTOMERS: ShowcaseCustomer[] = [
-  { id: 1, name: "Nadeesha Fernando", phone: "071 442 0198", city: "Nugegoda", totalOrders: 4 },
-  { id: 2, name: "Ruwan Perera", phone: "077 218 5563", city: "Kandy", totalOrders: 2 },
-  { id: 3, name: "Sanduni Jayasuriya", phone: "070 655 3341", city: "Galle", totalOrders: 6 },
-  { id: 4, name: "Amal Wickramasinghe", phone: "076 903 7724", city: "Colombo 5", totalOrders: 1 },
-  { id: 5, name: "Tharindu Gunawardena", phone: "071 320 8856", city: "Negombo", totalOrders: 3 },
-  { id: 6, name: "Malithi Silva", phone: "077 561 0942", city: "Kurunegala", totalOrders: 2 },
-];
+const SEED_COMPLAINTS: ShowcaseComplaint[] = [];
 
-const SEED_ORDERS: ShowcaseOrder[] = [
-  {
-    id: 1, orderNumber: "LT-1042", customerName: "Nadeesha Fernando", phone: "071 442 0198", address: "24/3 Lake Road, Nugegoda",
-    product: "Gift hamper — Classic (large)", qty: 1, priority: "High", stage: 3, trackingNumber: "ZE88213940",
-    createdAt: daysAgo(2), notes: "Customer asked for delivery after 5pm.",
-    history: [{ stage: 0, at: daysAgo(2) }, { stage: 1, at: daysAgo(2) }, { stage: 2, at: daysAgo(1) }, { stage: 3, at: daysAgo(0) }],
-    rating: 5,
-    checklist: [true, true, true, true],
-    teamNotes: [
-      { id: 1, author: "Priya", text: "Customer requested gift wrap — added.", at: daysAgo(2) },
-      { id: 2, author: "Dinesh", text: "Left with security guard, 5:40pm per instructions.", at: daysAgo(0) },
-    ],
-  },
-  {
-    id: 2, orderNumber: "LT-1043", customerName: "Ruwan Perera", phone: "077 218 5563", address: "112 Peradeniya Rd, Kandy",
-    product: "Ceramic dinner set (4-seat)", qty: 1, priority: "Medium", stage: 2, trackingNumber: null,
-    createdAt: daysAgo(1), notes: "",
-    history: [{ stage: 0, at: daysAgo(1) }, { stage: 1, at: daysAgo(1) }, { stage: 2, at: daysAgo(0) }],
-    rating: null,
-    checklist: [true, true, true, false],
-    teamNotes: [{ id: 1, author: "Priya", text: "One plate had a hairline chip — swapped before packing.", at: daysAgo(0) }],
-  },
-  {
-    id: 3, orderNumber: "LT-1044", customerName: "Sanduni Jayasuriya", phone: "070 655 3341", address: "9 Church St, Galle Fort",
-    product: "Table lamp — Rattan", qty: 2, priority: "Low", stage: 1, trackingNumber: null,
-    createdAt: daysAgo(1), notes: "Repeat customer — 6th order.",
-    history: [{ stage: 0, at: daysAgo(1) }, { stage: 1, at: daysAgo(0) }],
-    rating: null,
-    checklist: [true, false, false, false],
-    teamNotes: [],
-  },
-  {
-    id: 4, orderNumber: "LT-1045", customerName: "Amal Wickramasinghe", phone: "076 903 7724", address: "56 Havelock Rd, Colombo 5",
-    product: "Cushion cover set (3pc)", qty: 1, priority: "Medium", stage: 0, trackingNumber: null,
-    createdAt: daysAgo(0), notes: "",
-    history: [{ stage: 0, at: daysAgo(0) }],
-    rating: null,
-    checklist: [false, false, false, false],
-    teamNotes: [],
-  },
-  {
-    id: 5, orderNumber: "LT-1046", customerName: "Tharindu Gunawardena", phone: "071 320 8856", address: "3rd Lane, Negombo",
-    product: "Gift hamper — Deluxe", qty: 1, priority: "High", stage: 0, trackingNumber: null,
-    createdAt: daysAgo(0), notes: "Birthday gift — needs to arrive by Friday.",
-    history: [{ stage: 0, at: daysAgo(0) }],
-    rating: null,
-    checklist: [false, false, false, false],
-    teamNotes: [{ id: 1, author: "You (Owner)", text: "Priority — birthday gift, must ship today.", at: daysAgo(0) }],
-  },
-  {
-    id: 6, orderNumber: "LT-1041", customerName: "Malithi Silva", phone: "077 561 0942", address: "Dambulla Rd, Kurunegala",
-    product: "Wall clock — Walnut", qty: 1, priority: "Low", stage: 3, trackingNumber: "ZE88209117",
-    createdAt: daysAgo(4), notes: "",
-    history: [{ stage: 0, at: daysAgo(4) }, { stage: 1, at: daysAgo(4) }, { stage: 2, at: daysAgo(3) }, { stage: 3, at: daysAgo(2) }],
-    rating: 4,
-    checklist: [true, true, true, true],
-    teamNotes: [],
-  },
-  {
-    id: 7, orderNumber: "LT-1040", customerName: "Sanduni Jayasuriya", phone: "070 655 3341", address: "9 Church St, Galle Fort",
-    product: "Ceramic dinner set (6-seat)", qty: 1, priority: "Medium", stage: 3, trackingNumber: "ZE88201872",
-    createdAt: daysAgo(5), notes: "",
-    history: [{ stage: 0, at: daysAgo(5) }, { stage: 1, at: daysAgo(5) }, { stage: 2, at: daysAgo(4) }, { stage: 3, at: daysAgo(3) }],
-    rating: null,
-    checklist: [true, true, true, true],
-    teamNotes: [],
-  },
-];
-
-const SEED_COMPLAINTS: ShowcaseComplaint[] = [
-  {
-    id: 1, orderNumber: "LT-1040", customerName: "Sanduni Jayasuriya", phone: "070 655 3341",
-    subject: "One plate arrived with a small chip", details: "Customer says a chip was noticed on unboxing, sent a photo over SMS.",
-    status: "In progress", createdAt: daysAgo(2), resolution: null,
-  },
-  {
-    id: 2, orderNumber: "LT-1041", customerName: "Malithi Silva", phone: "077 561 0942",
-    subject: "Delivery later than the time window given", details: "Expected before 2pm, arrived around 4:30pm — no SMS update in between.",
-    status: "Resolved", createdAt: daysAgo(3), resolution: "Apologized, offered 10% off next order. Customer was understanding.",
-  },
-  {
-    id: 3, orderNumber: null, customerName: "Kasun Rathnayake", phone: "071 884 2210",
-    subject: "Asking if cash on delivery is available", details: "Not an existing order — a general question via the contact number.",
-    status: "Open", createdAt: daysAgo(0), resolution: null,
-  },
-];
-
-const SEED_BATCHES: ProductionBatch[] = [
-  {
-    id: 1, batchNumber: "B-204", item: "Gift hamper — Classic (large)", qty: 6, stage: 1,
-    startedAt: hoursAgo(3), stageStartedAt: hoursAgo(1),
-    checklist: [true, true, false, false], notes: "Restock for this week's hamper orders.",
-  },
-  {
-    id: 2, batchNumber: "B-203", item: "Gift hamper — Deluxe", qty: 4, stage: 2,
-    startedAt: hoursAgo(6), stageStartedAt: hoursAgo(0.5),
-    checklist: [true, true, true, false], notes: "",
-  },
-  {
-    id: 3, batchNumber: "B-202", item: "Gift hamper — Classic (large)", qty: 10, stage: 3,
-    startedAt: daysAgo(1), stageStartedAt: hoursAgo(4),
-    checklist: [true, true, true, true], notes: "Sealed and shelved.",
-  },
-  {
-    id: 4, batchNumber: "B-205", item: "Gift hamper — Deluxe", qty: 5, stage: 0,
-    startedAt: hoursAgo(0.25), stageStartedAt: hoursAgo(0.25),
-    checklist: [false, false, false, false], notes: "Waiting on ceramic mugs from supplier.",
-  },
-];
+const SEED_BATCHES: ProductionBatch[] = [];
 
 export type TeamChatMessage = { id: number; author: string; text: string; at: string };
 
-const SEED_CHAT: TeamChatMessage[] = [
-  { id: 1, author: "You (Owner)", text: "Morning all — LT-1046 is a birthday gift, needs to ship today.", at: hoursAgo(5) },
-  { id: 2, author: "Priya", text: "On it. Starting B-204 now for the hamper restock too.", at: hoursAgo(4) },
-  { id: 3, author: "Dinesh", text: "Zipline pickup is at 4pm today, one run only.", at: hoursAgo(2) },
-];
+const SEED_CHAT: TeamChatMessage[] = [];
 
 type Listener = () => void;
 
@@ -331,7 +202,7 @@ class ShowcaseStore {
   addOrder = (input: Pick<ShowcaseOrder, "customerName" | "phone" | "address" | "product" | "qty" | "priority" | "notes">) => {
     const order: ShowcaseOrder = {
       id: this.nextId++,
-      orderNumber: "LT-" + (1046 + this.nextId),
+      orderNumber: "LT-" + (1000 + this.nextId),
       stage: 0,
       trackingNumber: null,
       createdAt: new Date().toISOString(),
@@ -412,7 +283,7 @@ class ShowcaseStore {
     const now = new Date().toISOString();
     const batch: ProductionBatch = {
       id: this.nextBatchId,
-      batchNumber: "B-" + (205 + this.nextBatchId++),
+      batchNumber: "B-" + (200 + this.nextBatchId++),
       stage: 0,
       startedAt: now,
       stageStartedAt: now,

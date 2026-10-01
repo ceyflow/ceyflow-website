@@ -49,7 +49,7 @@ function TrackContent() {
 
       {searched && !order && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
-          We couldn't find that order. Try LT-1042 or LT-1044 below.
+          We couldn't find that order. Double-check the order number or phone and try again.
         </p>
       )}
 
@@ -66,16 +66,6 @@ function TrackContent() {
             <DeliveryTracker order={order} />
             <CourierTimeline order={order} />
             <StarRating order={order} />
-          </div>
-        </div>
-      )}
-
-      {!searched && (
-        <div className="text-center text-xs text-slate-400">
-          <p className="mb-2">Try a sample order:</p>
-          <div className="flex justify-center gap-2">
-            <button onClick={() => { setQuery("LT-1042"); setSearched(true); }} className="rounded-full border border-slate-200 px-3 py-1 font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700">LT-1042 (delivered)</button>
-            <button onClick={() => { setQuery("LT-1044"); setSearched(true); }} className="rounded-full border border-slate-200 px-3 py-1 font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700">LT-1044 (processing)</button>
           </div>
         </div>
       )}
