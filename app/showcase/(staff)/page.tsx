@@ -43,6 +43,10 @@ export default function ShowcaseDashboard() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <p className="mb-3 font-semibold text-slate-900">Recent orders</p>
+        {recent.length === 0 ? (
+          <p className="py-6 text-center text-sm text-slate-400">No orders yet — add one from the Orders page to see it here.</p>
+        ) : (
+          <>
         <div className="space-y-2 sm:hidden">
           {recent.map((o) => (
             <button key={o.id} onClick={() => setSelectedId(o.id)} className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-100 p-3 text-left">
@@ -74,6 +78,8 @@ export default function ShowcaseDashboard() {
             ))}
           </tbody>
         </table>
+          </>
+        )}
       </div>
 
       {selected && <OrderDrawer order={selected} onClose={() => setSelectedId(null)} onSms={(t) => setToasts((ts) => [...ts, t])} />}

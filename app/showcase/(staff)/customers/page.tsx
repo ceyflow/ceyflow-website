@@ -35,6 +35,10 @@ export default function ShowcaseCustomers() {
         <p className="mt-1 text-sm text-slate-500">Everyone who has ordered from you. Select a few to send a bulk SMS.</p>
       </div>
 
+      {customers.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">No customers yet — they'll show up here once orders come in.</p>
+      ) : (
+        <>
       <div className="space-y-2 sm:hidden">
         {customers.map((c) => (
           <label key={c.id} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3">
@@ -74,6 +78,8 @@ export default function ShowcaseCustomers() {
           </tbody>
         </table>
       </div>
+        </>
+      )}
 
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <p className="mb-2 text-sm font-semibold text-slate-900">Bulk SMS {selected.size > 0 && <span className="font-normal text-slate-500">— {selected.size} selected</span>}</p>

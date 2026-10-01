@@ -23,6 +23,9 @@ export default function ShowcaseChat() {
       </div>
 
       <div className="mt-4 flex-1 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4">
+        {messages.length === 0 && (
+          <p className="py-8 text-center text-sm text-slate-400">No messages yet — say hello to the team.</p>
+        )}
         {messages.map((m) => {
           const mine = m.author === staff.name;
           return (

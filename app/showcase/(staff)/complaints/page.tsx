@@ -31,6 +31,10 @@ export default function ShowcaseComplaints() {
         <p className="mt-1 text-sm text-slate-500">{open} open of {complaints.length} total — a running log of customer issues, in one place.</p>
       </div>
 
+      {complaints.length === 0 && (
+        <p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">No complaints yet — nice. New ones will show up here.</p>
+      )}
+
       <div className="space-y-3">
         {complaints.map((c) => {
           const isOpen = openId === c.id;

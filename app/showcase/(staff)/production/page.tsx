@@ -26,6 +26,10 @@ export default function ShowcaseProduction() {
         <p className="mt-1 text-sm text-slate-500">Hamper assembly, tracked from raw components to dispatch-ready.</p>
       </div>
 
+      {batches.length === 0 && (
+        <p className="rounded-xl border border-dashed border-slate-200 bg-white py-8 text-center text-sm text-slate-400">No batches running — start one below.</p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         {batches.map((b) => {
           const isFinal = b.stage >= 3;
