@@ -78,8 +78,8 @@ export function DocumentView({
         <div
           className={
             logoAlign === "center"
-              ? "flex flex-col items-center gap-4 border-b border-slate-100 pb-6 text-center"
-              : `flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6 ${logoAlign === "right" ? "flex-row-reverse" : ""}`
+              ? "flex flex-col items-center gap-4 border-b border-slate-100 pb-6 text-center print:pb-3"
+              : `flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6 print:pb-3 ${logoAlign === "right" ? "flex-row-reverse" : ""}`
           }
         >
           <div className={logoAlign === "right" ? "text-right" : undefined}>
@@ -97,7 +97,7 @@ export function DocumentView({
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 print:mt-4 print:gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Billed to</p>
             <p className="mt-1 font-semibold">{client.name}</p>
@@ -112,7 +112,7 @@ export function DocumentView({
           </div>
         </div>
 
-        <table className="table mt-8">
+        <table className="table mt-8 print:mt-4">
           <thead><tr><th>Description</th><th className="text-right">Qty</th><th className="text-right">Unit price</th><th className="text-right">Amount</th></tr></thead>
           <tbody>
             {items.map((it) => (
@@ -126,7 +126,7 @@ export function DocumentView({
           </tbody>
         </table>
 
-        <div className="mt-4 flex flex-col items-end gap-1 text-sm">
+        <div className="mt-4 flex flex-col items-end gap-1 text-sm print:mt-2 print-avoid-break">
           <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Subtotal</span><span>{money(doc.subtotal, cur)}</span></div>
           {doc.discount > 0 && <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Discount</span><span>-{money(doc.discount, cur)}</span></div>}
           {doc.tax_rate > 0 && <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Tax ({doc.tax_rate}%)</span><span>{money(doc.total - Math.max(0, doc.subtotal - doc.discount), cur)}</span></div>}
@@ -139,15 +139,15 @@ export function DocumentView({
           )}
         </div>
 
-        {showNotes && doc.notes && <p className="mt-8 text-sm text-slate-600">{doc.notes}</p>}
+        {showNotes && doc.notes && <p className="mt-8 text-sm text-slate-600 print:mt-4 print-avoid-break">{doc.notes}</p>}
         {showTerms && doc.terms && (
-          <div className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
+          <div className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500 print:mt-3 print:pt-3 print-avoid-break">
             <p className="mb-1 font-semibold text-slate-600">Terms</p>
             <p className="whitespace-pre-line">{doc.terms}</p>
           </div>
         )}
         {type === "invoice" && showPaymentDetails && settings.bank_details && (
-          <div className="mt-4 text-xs whitespace-pre-line text-slate-500">
+          <div className="mt-4 text-xs whitespace-pre-line text-slate-500 print:mt-3 print-avoid-break">
             <p className="mb-1 font-semibold text-slate-600">Payment details</p>
             {settings.bank_details}
           </div>
