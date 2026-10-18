@@ -18,6 +18,12 @@ function whatsAppShareHref(doc: DocWithTotals, client: Client, settings: Setting
   return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
+function paymentTermsDays(type: DocType, doc: DocWithTotals) {
+  if (type !== "invoice" || !doc.due_date) return null;
+  const days = Math.round((new Date(doc.due_date).getTime() - new Date(doc.issue_date).getTime()) / 86400000);
+  return days >= 0 ? days : null;
+}
+
 export function DocumentView({
   type, doc, items, client, settings, payments, onStatusChange, onConvert, onDelete, onAddPayment, onDeletePayment,
 }: {
@@ -36,6 +42,7 @@ export function DocumentView({
   const showNotes = settings.invoice_show_notes !== "false";
   const showTerms = settings.invoice_show_terms !== "false";
   const showPaymentDetails = settings.invoice_show_payment_details !== "false";
+  const terms = paymentTermsDays(type, doc);
 
   const showStepper = !["void", "declined", "expired"].includes(doc.status);
 
@@ -78,8 +85,8 @@ export function DocumentView({
         <div
           className={
             logoAlign === "center"
-              ? "flex flex-col items-center gap-4 border-b border-slate-100 pb-6 text-center print:pb-3"
-              : `flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-6 print:pb-3 ${logoAlign === "right" ? "flex-row-reverse" : ""}`
+              ? "flex flex-col items-center gap-4 border-b-2 border-brand-700 pb-6 text-center print:pb-3"
+              : `flex flex-wrap items-start justify-between gap-6 border-b-2 border-brand-700 pb-6 print:pb-3 ${logoAlign === "right" ? "flex-row-reverse" : ""}`
           }
         >
           <div className={logoAlign === "right" ? "text-right" : undefined}>
@@ -92,20 +99,21 @@ export function DocumentView({
             <p className="text-sm text-slate-500">{settings.company_email} · {settings.company_phone}</p>
           </div>
           <div className={logoAlign === "center" ? "" : logoAlign === "right" ? "text-left" : "text-right"}>
-            <p className="font-display text-2xl font-bold uppercase tracking-wide text-slate-800">{label}</p>
-            <p className="mt-1 text-sm text-slate-500">{doc.number}</p>
+            <p className="font-display text-2xl font-bold uppercase tracking-wide text-brand-700">{label}</p>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 print:mt-4 print:gap-4">
+        <div className="mt-6 grid gap-6 rounded-xl bg-brand-50 p-5 sm:grid-cols-2 print:mt-4 print:gap-4 print:p-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Billed to</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Billed to</p>
             <p className="mt-1 font-semibold">{client.name}</p>
             {client.company && <p className="text-sm text-slate-600">{client.company}</p>}
             {client.address && <p className="text-sm text-slate-600">{client.address}</p>}
             <p className="text-sm text-slate-600">{[client.email, client.phone].filter(Boolean).join(" · ")}</p>
+            {terms !== null && <p className="mt-1 text-sm text-slate-600">Payment terms: {terms} days</p>}
           </div>
           <div className="text-sm sm:text-right">
+            <p><span className="text-slate-500">{label} no:</span> <span className="font-semibold">{doc.number}</span></p>
             <p><span className="text-slate-500">Issue date:</span> {date(doc.issue_date)}</p>
             {doc.due_date && <p><span className="text-slate-500">{type === "invoice" ? "Due date" : "Valid until"}:</span> {date(doc.due_date)}</p>}
             {doc.title && <p className="mt-1 font-medium">{doc.title}</p>}
@@ -130,7 +138,7 @@ export function DocumentView({
           <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Subtotal</span><span>{money(doc.subtotal, cur)}</span></div>
           {doc.discount > 0 && <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Discount</span><span>-{money(doc.discount, cur)}</span></div>}
           {doc.tax_rate > 0 && <div className="flex w-full max-w-xs justify-between"><span className="text-slate-500">Tax ({doc.tax_rate}%)</span><span>{money(doc.total - Math.max(0, doc.subtotal - doc.discount), cur)}</span></div>}
-          <div className="flex w-full max-w-xs justify-between border-t border-slate-200 pt-1.5 text-base font-bold"><span>Total</span><span>{money(doc.total, cur)}</span></div>
+          <div className="flex w-full max-w-xs justify-between border-t-2 border-brand-700 pt-1.5 text-base font-bold"><span>Total</span><span>{money(doc.total, cur)}</span></div>
           {type === "invoice" && (
             <>
               <div className="flex w-full max-w-xs justify-between text-emerald-700"><span>Paid</span><span>{money(doc.paid, cur)}</span></div>
@@ -147,11 +155,18 @@ export function DocumentView({
           </div>
         )}
         {type === "invoice" && showPaymentDetails && settings.bank_details && (
-          <div className="mt-4 text-xs whitespace-pre-line text-slate-500 print:mt-3 print-avoid-break">
-            <p className="mb-1 font-semibold text-slate-600">Payment details</p>
+          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs whitespace-pre-line text-slate-500 print:mt-3 print-avoid-break">
+            <p className="mb-1 font-semibold text-slate-600">Bank details</p>
             {settings.bank_details}
           </div>
         )}
+
+        <div className="mt-10 flex justify-between gap-4 text-center text-[10px] text-slate-500 print:mt-6 print-avoid-break">
+          <div className="flex-1 border-t border-slate-300 pt-1.5">Prepared by</div>
+          <div className="flex-1 border-t border-slate-300 pt-1.5">Approved by</div>
+          <div className="flex-1 border-t border-slate-300 pt-1.5">Checked by</div>
+          <div className="flex-1 border-t border-slate-300 pt-1.5">Received by</div>
+        </div>
       </div>
 
       {type === "invoice" && payments && (
