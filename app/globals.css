@@ -70,5 +70,6 @@ body { background: #ffffff; color: var(--color-ink); }
   .no-print { display: none !important; }
   body { background: white; }
   .print-sheet { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; max-width: none !important; }
-  @page { margin: 14mm; }
+  .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+  @page { margin: 10mm; }
 }
