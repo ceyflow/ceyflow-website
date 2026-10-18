@@ -16,10 +16,10 @@ function EditQuoteForm() {
 
   useEffect(() => {
     getClients().then(setClients);
-    getDocument(id).then((d) => {
+    getDocument(id).then(async (d) => {
       if (!d || d.type !== "quote") { setDoc(undefined); return; }
+      setItems(await getItems(id));
       setDoc(d);
-      getItems(id).then(setItems);
     });
   }, [id]);
 
