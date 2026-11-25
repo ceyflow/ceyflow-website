@@ -18,14 +18,16 @@ tokens here** (this repo is public).
 
 | Client | Product | GitHub repo | Supabase project (ref) | Hosting | Status |
 |---|---|---|---|---|---|
-| Ceyflow | Marketing site + admin ERP | `ceyflow/ceyflow-website` | `ceyflow-internal` (`hqmkdzcfoljalaridxxv`) | GitHub Pages | Live |
+| Ceyflow | Marketing site + admin ERP | `ceyflow/ceyflow-website` | `Ceyflow Company` (`hqmkdzcfoljalaridxxv`) | GitHub Pages | Live |
 | Audrey Care | Operations app | `ceyflow/audrey-care-ops` | `Audrey Care Project` (`mntnobzwbvqpvmaxqcuc`) | GitHub Pages, `audreyops.online` | **Live, in daily use** |
 | Audrey Care | Online shop | `ceyflow/audrey-care-shop` | not created yet (demo mode) | not deployed | In progress |
 
-The Supabase project "VihangaSudaraka's Project" is being renamed to "Audrey Care Project", and
-"ceyflow's Projects" is the Ceyflow site's database (rename it `ceyflow-internal` if you like). Rename in the
-dashboard: Project Settings → General → Project name. Renaming only changes the label; the project ref, URL and
-keys stay the same, so nothing breaks.
+Supabase project names: "Audrey Care Project" (audreyops) and "Ceyflow Company" (the Ceyflow site's database).
+To rename one: Project Settings → General → Project name. Renaming only changes the label; the project ref, URL
+and keys stay the same, so nothing breaks.
+
+**Deadline:** Supabase shows "Projects will be restricted from 17 Dec, 2026 if your organization remains over
+quota". Fix before then: find the exceeded limit under Organization → Usage, then either reduce it or upgrade to Pro.
 
 ## Free-tier rules (until the org is upgraded to Pro)
 
