@@ -12,11 +12,10 @@ const values = [
 export default function About() {
   return (
     <>
-      <section className="bg-gradient-to-b from-brand-50 to-white">
-        <div className="mx-auto max-w-4xl px-4 py-16">
-          <p className="text-sm font-semibold text-brand-700">Who we are</p>
-          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight">We build the systems small businesses actually run on.</h1>
-          <p className="mt-5 text-lg text-slate-600">
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <h1 className="display max-w-4xl text-5xl md:text-7xl">We build the systems small businesses actually run on.</h1>
+          <p className="mt-6 max-w-2xl text-lg text-slate-600">
             Ceyflow is a Sri Lankan software company. We started by building a complete operations system for a
             growing personal care brand, covering orders, courier tracking, customer SMS and batch production.
             Now we offer the same systems to other businesses that have outgrown notebooks, spreadsheets and chat groups.
@@ -24,30 +23,37 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-4 py-12">
-        <h2 className="font-display text-2xl font-bold">What we do</h2>
-        <p className="mt-3 text-slate-600">
-          We design, build and look after business operations software: the tools your team uses every day to take
-          orders, pack and ship them, keep customers informed, and make your products. Each client gets their own
-          system with their own branding and staff logins, hosted and supported by us.
-        </p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {values.map((v) => (
-            <div key={v.t} className="card p-6">
-              <p className="font-semibold">{v.t}</p>
-              <p className="mt-2 text-sm text-slate-600">{v.d}</p>
-            </div>
-          ))}
+      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+        <div className="grid gap-10 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <h2 className="headline text-3xl md:text-4xl">What we do</h2>
+            <p className="mt-4 text-slate-600">
+              We design, build and look after business operations software: the tools your team uses every day to take
+              orders, pack and ship them, keep customers informed, and make your products. Each client gets their own
+              system with their own branding and staff logins, hosted and supported by us.
+            </p>
+          </div>
+          <dl className="grid gap-x-8 gap-y-8 sm:grid-cols-2 md:col-span-7">
+            {values.map((v) => (
+              <div key={v.t} className="border-t-2 border-ink pt-4">
+                <dt className="font-bold text-ink">{v.t}</dt>
+                <dd className="mt-2 text-slate-600">{v.d}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-4 pb-20">
-        <div className="card flex flex-col items-start justify-between gap-6 p-8 md:flex-row md:items-center">
+      <section className="border-t border-line bg-mist">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 md:flex-row md:items-center">
           <div>
-            <p className="font-display text-xl font-bold">Want to see it running?</p>
+            <p className="headline text-3xl">Want to see it running?</p>
             <p className="mt-1 text-slate-600">We will walk you through a live system on a free call.</p>
           </div>
-          <Link href="/contact" className="btn-primary px-5 py-3">Contact us</Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/contact" className="cta">Contact us</Link>
+            <Link href="/showcase#sample" className="cta-quiet">See the live demo</Link>
+          </div>
         </div>
       </section>
     </>

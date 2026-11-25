@@ -25,7 +25,7 @@ export function ContactForm({ interest, message = "", options }: { interest: str
   if (ok) {
     return (
       <div className="card p-8 text-center">
-        <p className="font-display text-2xl font-bold">Thank you!</p>
+        <p className="headline text-3xl">Thank you!</p>
         <p className="mt-2 text-slate-600">We have your message and will get back to you within one working day.</p>
       </div>
     );
@@ -51,7 +51,7 @@ export function ContactForm({ interest, message = "", options }: { interest: str
         <textarea id="message" name="message" rows={5} className="input" defaultValue={message} placeholder="What do you sell, how do orders come in, and what's slowing you down?" />
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button className="btn-primary w-full py-3 text-base" disabled={pending}>{pending ? "Sending..." : "Send message"}</button>
+      <button className="cta w-full disabled:opacity-60" disabled={pending}>{pending ? "Sending..." : "Send message"}</button>
     </form>
   );
 }

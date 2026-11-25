@@ -11,7 +11,10 @@
   --color-brand-800: #253974;
   --color-brand-900: #182b52;
   --color-accent: #49c8ef;
-  --color-ink: #10182b;
+  --color-ink: #0c1432;
+  --color-signal: #ffcf33;
+  --color-mist: #eef1f8;
+  --color-line: #d5dbea;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -64,6 +67,71 @@ body { background: #ffffff; color: var(--color-ink); }
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-sms-pop { animation: none; opacity: 1; transform: none; }
+}
+
+/* ---------- Public marketing site ("site" wrapper in app/(site)/layout.tsx) ----------
+   One family, Bricolage Grotesque, used at two widths: condensed and heavy for headlines,
+   normal width for reading. Admin and demo screens keep Inter. */
+.site {
+  --font-display: "Bricolage Grotesque Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-display);
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+.site :focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 3px; }
+.site .display {
+  font-stretch: 76%;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.site .headline {
+  font-stretch: 82%;
+  font-weight: 760;
+  letter-spacing: -0.008em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+/* Buttons: yellow is reserved for the one primary action on a screen. */
+.cta, .cta-quiet {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  border-radius: 6px; padding: 0.8rem 1.35rem;
+  font-size: 0.97rem; font-weight: 700; line-height: 1.2;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.cta { background: var(--color-signal); color: var(--color-ink); border: 1px solid var(--color-signal); }
+.cta:hover { background: #ffc300; border-color: #ffc300; }
+.cta-quiet { background: transparent; color: var(--color-ink); border: 1px solid rgba(12, 20, 50, 0.28); }
+.cta-quiet:hover { border-color: var(--color-ink); }
+.cta-sm { padding: 0.5rem 0.95rem; font-size: 0.9rem; }
+
+/* Forms and cards on the public pages: plain sentence-case labels, small radius. */
+.site .label { text-transform: none; letter-spacing: 0; font-size: 0.9rem; font-weight: 650; color: var(--color-ink); }
+.site .input { border-radius: 6px; border-color: #b9c1d6; padding: 0.65rem 0.8rem; font-size: 1rem; }
+.site .card { border-radius: 6px; border-color: var(--color-line); }
+.site .table th { text-transform: none; letter-spacing: 0; font-size: 0.9rem; font-weight: 650; color: var(--color-ink); border-color: var(--color-ink); }
+.site .table td { border-color: var(--color-line); padding-top: 0.9rem; padding-bottom: 0.9rem; }
+
+/* Order "tickets": the shape of a printed waybill, with a dashed tear line under the header. */
+.ticket { background: #fff; border: 1px solid var(--color-line); border-radius: 6px; }
+.ticket-head { border-bottom: 1px dashed #b9c1d6; }
+
+.flash-ring { animation: flash-ring 1.4s ease-out forwards; border-radius: 6px; }
+@keyframes flash-ring {
+  0% { box-shadow: 0 0 0 3px var(--color-signal); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 207, 51, 0); }
+}
+.toast-in { animation: toast-in 0.35s ease-out both; }
+@keyframes toast-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash-ring, .toast-in { animation: none; }
 }
 
 @media print {

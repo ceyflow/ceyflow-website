@@ -7,8 +7,8 @@ const paths: Record<string, React.ReactNode> = {
 
 export function SystemIcon({ slug, className = "" }: { slug: string; className?: string }) {
   return (
-    <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-brand-100 ${className}`}>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <span className={`inline-flex text-brand-700 ${className}`}>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {paths[slug] ?? <circle cx="12" cy="12" r="8" />}
       </svg>
     </span>

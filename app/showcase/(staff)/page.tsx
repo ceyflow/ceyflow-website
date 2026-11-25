@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useShowcaseOrders } from "@/lib/useShowcaseOrders";
 import { STAFF_MEMBERS, showcaseStore } from "@/lib/showcaseData";
 import { useShowcaseStaff } from "@/lib/showcaseStaffContext";
@@ -20,6 +20,11 @@ export default function ShowcaseDashboard() {
   const orders = useShowcaseOrders();
   const { setStaff } = useShowcaseStaff();
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // The public site links here as /showcase#sample so visitors land on a filled-in demo.
+  useEffect(() => {
+    if (window.location.hash === "#sample" && showcaseStore.getOrders().length === 0) showcaseStore.loadSampleData();
+  }, []);
   const [toasts, setToasts] = useState<SmsToastMessage[]>([]);
 
   const inProgress = orders.filter((o) => o.stage < 3).length;
