@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePackages } from "../../lib/publicData";
 import { HeroBoard } from "../../components/site/HeroBoard";
 import { TrackTicket } from "../../components/site/TrackTicket";
+import { PhotoBand } from "../../components/site/Photo";
 
 const steps = [
   { t: "Free discovery call", d: "We map how your orders, deliveries and production run today." },
@@ -68,6 +69,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      <PhotoBand slot="home" className="pb-16 md:pb-24" />
 
       {/* The customer's side */}
       <section className="border-y border-line bg-mist">

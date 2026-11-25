@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { usePackages } from "../../../lib/publicData";
 import { SystemIcon } from "../../../components/SystemIcon";
+import { Photo } from "../../../components/site/Photo";
+import { PHOTOS, type PhotoSlot } from "../../../lib/sitePhotos";
 
 export function SystemsClient() {
   const packages = usePackages();
@@ -45,7 +47,7 @@ export function SystemsClient() {
           <section key={p.slug} id={p.slug} className="scroll-mt-20 border-t-2 border-ink py-10 md:py-14">
             <div className="grid gap-8 md:grid-cols-12 md:gap-12">
               <div className="md:col-span-5">
-                <SystemIcon slug={p.slug} />
+                {PHOTOS[p.slug as PhotoSlot] ? <Photo slot={p.slug as PhotoSlot} className="mb-5 aspect-[4/3] rounded-md" /> : <SystemIcon slug={p.slug} />}
                 <h2 className="headline mt-4 text-3xl md:text-4xl">{p.name}</h2>
                 <p className="mt-3 text-slate-600">{p.description}</p>
                 <dl className="mt-6 space-y-4 text-[15px]">

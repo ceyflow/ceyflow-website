@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PhotoBand } from "../../../components/site/Photo";
 
 export const metadata = { title: "About us" };
 
@@ -22,6 +23,8 @@ export default function About() {
           </p>
         </div>
       </section>
+
+      <PhotoBand slot="about" className="pt-12 md:pt-16" />
 
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="grid gap-10 md:grid-cols-12">
