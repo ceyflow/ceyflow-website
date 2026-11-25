@@ -15,11 +15,11 @@ export function SiteHeader() {
         <Link href="/"><Logo /></Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-brand-700">{l.label}</Link>
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-brand-700">{l.label}</Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-slate-800">Login</Link>
+          <Link href="/admin" className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-800">Login</Link>
           <Link href="/contact" className="btn-primary">Book a free call</Link>
         </div>
       </div>
