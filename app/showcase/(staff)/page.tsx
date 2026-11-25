@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useShowcaseOrders } from "@/lib/useShowcaseOrders";
+import { STAFF_MEMBERS, showcaseStore } from "@/lib/showcaseData";
+import { useShowcaseStaff } from "@/lib/showcaseStaffContext";
 import { StagePill } from "@/components/showcase/Pills";
 import { OrderDrawer } from "@/components/showcase/OrderDrawer";
 import { SmsToast, type SmsToastMessage } from "@/components/showcase/SmsToast";
@@ -16,6 +18,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 export default function ShowcaseDashboard() {
   const orders = useShowcaseOrders();
+  const { setStaff } = useShowcaseStaff();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [toasts, setToasts] = useState<SmsToastMessage[]>([]);
 
@@ -29,9 +32,30 @@ export default function ShowcaseDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500">A live look at today's orders and deliveries.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-500">A live look at today's orders and deliveries.</p>
+        </div>
+        {orders.length === 0 ? (
+          <button
+            onClick={() => showcaseStore.loadSampleData()}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Load sample data
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              showcaseStore.clearData();
+              setStaff(STAFF_MEMBERS[0]);
+              setSelectedId(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Clear demo data
+          </button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

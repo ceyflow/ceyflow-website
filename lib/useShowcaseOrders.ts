@@ -18,6 +18,10 @@ export function useShowcaseChat() {
   return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getChatMessages, showcaseStore.getChatMessages);
 }
 
+export function useShowcaseCustomers() {
+  return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getCustomers, showcaseStore.getCustomers);
+}
+
 export function useShowcaseStaffDirectory() {
   return useSyncExternalStore(showcaseStore.subscribe, showcaseStore.getStaffDirectory, showcaseStore.getStaffDirectory);
 }

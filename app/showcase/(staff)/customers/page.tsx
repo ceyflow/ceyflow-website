@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import { showcaseStore } from "@/lib/showcaseData";
+import { useShowcaseCustomers } from "@/lib/useShowcaseOrders";
 import { nextToastId, SmsToast, type SmsToastMessage } from "@/components/showcase/SmsToast";
 
 export default function ShowcaseCustomers() {
-  const customers = showcaseStore.getCustomers();
+  const customers = useShowcaseCustomers();
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [message, setMessage] = useState("");
   const [toasts, setToasts] = useState<SmsToastMessage[]>([]);

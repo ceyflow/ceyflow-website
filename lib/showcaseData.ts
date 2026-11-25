@@ -5,6 +5,8 @@
 // State lives only in this module (resets on every full page load) — there is
 // no backend, so there's nothing to seed, reset, or accidentally leak.
 
+import { buildShowcaseSample } from "./showcaseSample";
+
 export type OrderStage = 0 | 1 | 2 | 3;
 
 export const ORDER_STAGES: { key: OrderStage; label: string }[] = [
@@ -147,6 +149,7 @@ class ShowcaseStore {
   private orders: ShowcaseOrder[] = SEED_ORDERS.map((o) => ({ ...o, history: [...o.history], checklist: [...o.checklist], teamNotes: [...o.teamNotes] }));
   private complaints: ShowcaseComplaint[] = SEED_COMPLAINTS.map((c) => ({ ...c }));
   private batches: ProductionBatch[] = SEED_BATCHES.map((b) => ({ ...b, checklist: [...b.checklist] }));
+  private customers: ShowcaseCustomer[] = SEED_CUSTOMERS.map((c) => ({ ...c }));
   private staffDirectory: StaffMember[] = STAFF_MEMBERS.map((s) => ({ ...s }));
   private chatMessages: TeamChatMessage[] = SEED_CHAT.map((m) => ({ ...m }));
   private listeners = new Set<Listener>();
@@ -234,7 +237,38 @@ class ShowcaseStore {
     this.emit();
   };
 
-  getCustomers = (): ShowcaseCustomer[] => SEED_CUSTOMERS;
+  getCustomers = (): ShowcaseCustomer[] => this.customers;
+
+  // The demo opens blank on purpose (so it can be built up live in a pitch).
+  // These two let a presenter fill it with fictional sample data, or wipe it again.
+  loadSampleData = () => {
+    const s = buildShowcaseSample(Date.now());
+    this.orders = s.orders;
+    this.customers = s.customers;
+    this.complaints = s.complaints;
+    this.batches = s.batches;
+    this.chatMessages = s.chat;
+    this.staffDirectory = s.staff;
+    this.nextId = Math.max(...s.orders.map((o) => o.id)) + 1;
+    this.nextComplaintId = Math.max(...s.complaints.map((c) => c.id)) + 1;
+    this.nextBatchId = Math.max(...s.batches.map((b) => b.id)) + 1;
+    this.nextStaffId = Math.max(...s.staff.map((m) => m.id)) + 1;
+    this.emit();
+  };
+
+  clearData = () => {
+    this.orders = [];
+    this.customers = [];
+    this.complaints = [];
+    this.batches = [];
+    this.chatMessages = [];
+    this.staffDirectory = STAFF_MEMBERS.map((m) => ({ ...m }));
+    this.nextId = 1;
+    this.nextComplaintId = 1;
+    this.nextBatchId = 1;
+    this.nextStaffId = STAFF_MEMBERS.length + 1;
+    this.emit();
+  };
 
   getComplaints = (): ShowcaseComplaint[] => this.complaints;
 
