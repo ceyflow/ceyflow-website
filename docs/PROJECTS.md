@@ -8,7 +8,7 @@ tokens here** (this repo is public).
 | Thing | Pattern | Example |
 |---|---|---|
 | GitHub repo (in the `ceyflow` org) | `<client>-<product>` | `audrey-care-ops` |
-| Supabase project (in "ceyflow's Org") | `<client>-<product>-prod` | `audrey-ops-prod` |
+| Supabase project (in "ceyflow's Org") | `<Client> Project` (add the product if a client has more than one database) | `Audrey Care Project` |
 | Domain | the client's own, registered in the client's name | `audreyops.online` |
 | Template repo (not built yet) | `ceyflow-core` | |
 
@@ -19,11 +19,13 @@ tokens here** (this repo is public).
 | Client | Product | GitHub repo | Supabase project (ref) | Hosting | Status |
 |---|---|---|---|---|---|
 | Ceyflow | Marketing site + admin ERP | `ceyflow/ceyflow-website` | `ceyflow-internal` (`hqmkdzcfoljalaridxxv`) | GitHub Pages | Live |
-| Audrey Care | Operations app | `ceyflow/audrey-care-ops` | `audrey-ops-prod` (`mntnobzwbvqpvmaxqcuc`) | GitHub Pages, `audreyops.online` | **Live, in daily use** |
+| Audrey Care | Operations app | `ceyflow/audrey-care-ops` | `Audrey Care Project` (`mntnobzwbvqpvmaxqcuc`) | GitHub Pages, `audreyops.online` | **Live, in daily use** |
 | Audrey Care | Online shop | `ceyflow/audrey-care-shop` | not created yet (demo mode) | not deployed | In progress |
 
-The Supabase projects are currently still named "VihangaSudaraka's Project" (audrey-ops-prod) and
-"ceyflow's Projects" (ceyflow-internal). Rename them in the dashboard: Project Settings → General → Project name.
+The Supabase project "VihangaSudaraka's Project" is being renamed to "Audrey Care Project", and
+"ceyflow's Projects" is the Ceyflow site's database (rename it `ceyflow-internal` if you like). Rename in the
+dashboard: Project Settings → General → Project name. Renaming only changes the label; the project ref, URL and
+keys stay the same, so nothing breaks.
 
 ## Free-tier rules (until the org is upgraded to Pro)
 
