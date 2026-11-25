@@ -2,6 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import { useBundles, usePackages, useSettings } from "../../../lib/publicData";
 import { ContactForm } from "./ContactForm";
+import { Reveal } from "../../../components/Reveal";
 
 export function ContactClient() {
   const params = useSearchParams();
@@ -16,7 +17,7 @@ export function ContactClient() {
   return (
     <section className="bg-gradient-to-b from-brand-50 to-white">
       <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 md:grid-cols-5">
-        <div className="md:col-span-2">
+        <Reveal className="md:col-span-2">
           <h1 className="font-display text-4xl font-extrabold tracking-tight">Let's talk</h1>
           <p className="mt-4 text-lg text-slate-600">
             Tell us a little about your business. We will reply within one working day to set up a free discovery call.
@@ -29,10 +30,10 @@ export function ContactClient() {
             )}
             <li><p className="font-semibold">Location</p><p className="text-slate-600">{s.company_address}</p></li>
           </ul>
-        </div>
-        <div className="md:col-span-3">
+        </Reveal>
+        <Reveal delay={100} className="md:col-span-3">
           <ContactForm interest={interest} message={message} options={options} />
-        </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { usePackages } from "../../../lib/publicData";
 import { SystemIcon } from "../../../components/SystemIcon";
+import { Reveal } from "../../../components/Reveal";
 
 export function SystemsClient() {
   const packages = usePackages();
   return (
     <>
       <section className="bg-gradient-to-b from-brand-50 to-white">
-        <div className="mx-auto max-w-6xl px-4 py-16">
+        <Reveal className="mx-auto max-w-6xl px-4 py-16">
           <h1 className="font-display text-4xl font-extrabold tracking-tight">Our systems</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-600">
             Every system is a web app your team opens in a browser, with your branding, staff logins and access control.
@@ -16,19 +17,19 @@ export function SystemsClient() {
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {packages.map((p) => (
-              <a key={p.slug} href={`#${p.slug}`} className="rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:ring-brand-500">{p.name}</a>
+              <a key={p.slug} href={`#${p.slug}`} className="rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:ring-brand-500">{p.name}</a>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 pt-12">
+      <Reveal className="mx-auto max-w-6xl px-4 pt-12">
         <div className="card overflow-x-auto">
           <table className="table">
             <thead><tr><th>System</th><th>Solves</th><th>Best for</th><th></th></tr></thead>
             <tbody>
               {packages.map((p) => (
-                <tr key={p.slug}>
+                <tr key={p.slug} className="transition hover:bg-brand-50/40">
                   <td className="font-semibold">{p.name}</td>
                   <td className="text-slate-600">{p.solves}</td>
                   <td className="text-slate-600">{p.best_for}</td>
@@ -38,11 +39,11 @@ export function SystemsClient() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Reveal>
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-12">
         {packages.map((p) => (
-          <section key={p.slug} id={p.slug} className="card scroll-mt-24 p-6 md:p-10">
+          <Reveal key={p.slug} as="section" id={p.slug} className="card scroll-mt-24 p-6 md:p-10">
             <div className="grid gap-8 md:grid-cols-5">
               <div className="md:col-span-2">
                 <SystemIcon slug={p.slug} />
@@ -71,7 +72,7 @@ export function SystemsClient() {
                 </div>
               </div>
             </div>
-          </section>
+          </Reveal>
         ))}
       </div>
     </>

@@ -23,7 +23,7 @@ body { background: #ffffff; color: var(--color-ink); }
 .btn-primary,
 .btn-secondary,
 .btn-danger {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100;
 }
 .btn-primary { @apply bg-brand-700 text-white hover:bg-brand-800; }
 .btn-secondary { @apply border border-slate-300 bg-white text-slate-800 hover:bg-slate-50; }
@@ -31,7 +31,7 @@ body { background: #ffffff; color: var(--color-ink); }
 .btn-sm { @apply px-3 py-1.5 text-xs; }
 .input { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100; }
 .label { @apply mb-1 block text-xs font-semibold tracking-wide text-slate-600 uppercase; }
-.card { @apply rounded-xl border border-slate-200 bg-white; }
+.card { @apply rounded-xl border border-slate-200 bg-white transition duration-300; }
 .table { @apply w-full text-sm; }
 .table th { @apply border-b border-slate-200 px-3 py-2 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase; }
 .table td { @apply border-b border-slate-100 px-3 py-2.5 align-top; }
@@ -65,6 +65,31 @@ body { background: #ffffff; color: var(--color-ink); }
 @media (prefers-reduced-motion: reduce) {
   .animate-sms-pop { animation: none; opacity: 1; transform: none; }
 }
+
+/* Scroll-triggered reveal, paired with the <Reveal> component. */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* One-shot entrance for above-the-fold content that mounts already in view. */
+.animate-fade-up { animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up { animation: none; }
+}
+
+/* Subtle lift for interactive cards and chips. */
+.hover-lift { @apply transition duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-900/5; }
 
 @media print {
   .no-print { display: none !important; }
